@@ -1,83 +1,119 @@
 {
-    "hosting": [
-        {
-            "target": "foxic",
-            "public": "dist",
-            "ignore": [
-                "firebase.json",
-                "**/.*",
-                "**/node_modules/**"
-            ],
-            "rewrites": [
-                {
-                    "source": "/sw.js",
-                    "destination": "/sw.js"
-                },
-                {
-                    "source": "/manifest.json",
-                    "destination": "/manifest.json"
-                },
-                {
-                    "source": "**",
-                    "destination": "/index.html"
-                }
-            ],
-            "headers": [
-                {
-                    "source": "**/*.@(eot|otf|ttf|ttc|woff|font.css)",
-                    "headers": [
-                        {
-                            "key": "Access-Control-Allow-Origin",
-                            "value": "*"
-                        }
-                    ]
-                },
-                {
-                    "source": "**/*.@(jpg|jpeg|gif|png|svg|webp|ico|mp3|css|eot|otf|ttf|ttc|woff|woff2)",
-                    "headers": [
-                        {
-                            "key": "Cache-Control",
-                            "value": "public, max-age=604800, s-maxage=1209600, immutable"
-                        }
-                    ]
-                },
-                {
-                    "source": "**/*.json",
-                    "headers": [
-                        {
-                            "key": "Cache-Control",
-                            "value": "no-store"
-                        }
-                    ]
-                },
-                {
-                    "source": "**/index.html",
-                    "headers": [
-                        {
-                            "key": "Cache-Control",
-                            "value": "no-cache, no-store, must-revalidate"
-                        }
-                    ]
-                },
-                {
-                    "source": "**/*.@(wasm|mjs|js)",
-                    "headers": [
-                        {
-                            "key": "Cache-Control",
-                            "value": "no-cache, max-age=0, must-revalidate"
-                        }
-                    ]
-                }
-            ]
-        }
+  "hosting": {
+    "target": "foxic",
+    "public": "dist",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
     ],
-    "emulators": {
-        "hosting": {
-            "port": 5000
-        },
-        "ui": {
-            "enabled": true
-        },
-        "singleProjectMode": true
+    "rewrites": [
+      {
+        "source": "/sw.js",
+        "destination": "/sw.js"
+      },
+      {
+        "source": "/manifest.json",
+        "destination": "/manifest.json"
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(eot|otf|ttf|ttc|woff|font.css)",
+        "headers": [
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(jpg|jpeg|gif|png|svg|webp|ico|mp3|css|eot|otf|ttf|ttc|woff|woff2)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=604800, s-maxage=1209600, immutable"
+          }
+        ]
+      },
+      {
+        "source": "/index.html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, max-age=0, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/assets/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=604800, immutable"
+          }
+        ]
+      },
+      {
+        "source": "**/*.json",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-store"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(wasm|mjs|js)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, max-age=0, must-revalidate"
+          }
+        ]
+      }
+    ]
+  },
+  "emulators": {
+    "hosting": {
+      "port": 5000
+    },
+    "ui": {
+      "enabled": true
+    },
+    "singleProjectMode": true
+  },
+  "firestore": {
+    "database": "(default)",
+    "location": "eur3",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint",
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ]
     }
+  ],
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "remoteconfig": {
+    "template": "remoteconfig.template.json"
+  }
 }

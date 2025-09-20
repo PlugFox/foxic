@@ -1,15 +1,12 @@
 {
     "projects": {
-        "default": "foxic"
+        "default": "i-c-o-n-s"
     },
     "targets": {
         "foxic": {
             "hosting": {
                 "foxic": [
                     "foxic"
-                ],
-                "i-c-o-n-s": [
-                    "i-c-o-n-s"
                 ]
             }
         }
