@@ -1,8 +1,9 @@
 {
     "version": "0.2.0",
     "configurations": [
+        /* ───── Server ───── */
         {
-            "name": "Run Vite Dev Server",
+            "name": "server:run",
             "type": "node",
             "request": "launch",
             "runtimeExecutable": "npm",
@@ -25,11 +26,16 @@
                 "pattern": "Local:\\s*(https?://localhost:\\d+)",
                 "uriFormat": "%s",
                 "action": "debugWithChrome"
+            },
+            "presentation": {
+                "group": "Server",
+                "order": 1
             }
         },
+        /* ───── Chrome ───── */
         {
-            "name": "Launch SolidJS (Chrome)",
-            "type": "pwa-chrome",
+            "name": "web:chrome:new",
+            "type": "chrome",
             "request": "launch",
             "url": "http://127.0.0.1:5173",
             "webRoot": "${workspaceFolder}",
@@ -43,18 +49,47 @@
                 "<node_internals>/**"
             ],
             "sourceMapPathOverrides": {
+                "*/src/*": "${webRoot}/src/*",
                 "webpack:///src/*": "${webRoot}/src/*",
-                "vite/dist/*": "${webRoot}/*",
-                "*/src/*": "${webRoot}/src/*"
+                "vite/dist/*": "${webRoot}/*"
+            },
+            "preLaunchTask": "server:start",
+            "presentation": {
+                "group": "Chrome",
+                "order": 1
+            }
+        },
+        {
+            "name": "web:chrome:attach",
+            "type": "chrome",
+            "request": "attach",
+            "port": 9222,
+            "webRoot": "${workspaceFolder}",
+            "url": "http://127.0.0.1:5173",
+            "presentation": {
+                "group": "Chrome",
+                "order": 2
+            }
+        },
+        /* ───── Edge ───── */
+        {
+            "name": "web:edge:new",
+            "type": "msedge",
+            "request": "launch",
+            "url": "http://127.0.0.1:5173",
+            "webRoot": "${workspaceFolder}",
+            "presentation": {
+                "group": "Edge",
+                "order": 1
             }
         }
     ],
     "compounds": [
         {
-            "name": "SolidJS Full Debug",
+            "name": "debug:full",
             "configurations": [
-                "Run Vite Dev Server",
-                "Launch SolidJS (Chrome)"
+                "server:run",
+                "web:chrome:new"
             ]
         }
     ]

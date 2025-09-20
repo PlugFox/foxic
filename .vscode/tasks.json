@@ -2,61 +2,91 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Start Dev Server",
-      "type": "npm",
-      "script": "dev",
+      "label": "server:start",
+      "detail": "Start server",
+      "type": "process",
+      "command": "npm",
+      "args": [
+        "run",
+        "dev",
+        "--",
+        "--strictPort",
+        "--port",
+        "5173",
+        "--host"
+      ],
+      "isBackground": true,
       "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "FORCE_COLOR": "1"
+        }
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
         "focus": false,
         "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
+        "showReuseMessage": true
       },
-      "isBackground": true,
-      "problemMatcher": [
-        {
-          "pattern": [
-            {
-              "regexp": ".",
-              "file": 1,
-              "location": 2,
-              "message": 3
-            }
-          ],
-          "background": {
-            "activeOnStart": true,
-            "beginsPattern": ".",
-            "endsPattern": "Local:.*?(https?://\\S+)"
-          }
+      "problemMatcher": {
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "Local:\\s*https?://\\S+"
         }
-      ]
-    },
-    {
-      "label": "Open in Simple Browser",
-      "type": "shell",
-      "command": "echo",
-      "args": [
-        "Opening in VS Code Simple Browser..."
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": false,
-        "reveal": "silent",
-        "focus": false,
-        "panel": "shared"
       }
     },
     {
-      "label": "Build Production",
-      "type": "npm",
-      "script": "build",
+      "label": "server:preview",
+      "detail": "Preview production build",
+      "type": "process",
+      "command": "npm",
+      "args": [
+        "run",
+        "preview",
+        "--",
+        "--strictPort",
+        "--port",
+        "4173",
+        "--host"
+      ],
+      "isBackground": true,
       "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
       "presentation": {
-        "echo": true,
         "reveal": "always",
-        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": {
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "Local:\\s*https?://\\S+"
+        }
+      },
+      "dependsOn": [
+        "build:prod"
+      ]
+    },
+    {
+      "label": "build:prod",
+      "detail": "Build production",
+      "type": "process",
+      "command": "npm",
+      "args": [
+        "run",
+        "build"
+      ],
+      "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
         "panel": "shared"
       },
       "problemMatcher": [
@@ -64,27 +94,59 @@
       ]
     },
     {
-      "label": "Preview Production Build",
-      "type": "npm",
-      "script": "serve",
+      "label": "deps:install",
+      "detail": "Install dependencies",
+      "type": "process",
+      "command": "npm",
+      "args": [
+        "ci"
+      ],
       "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
+      "options": {
+        "cwd": "${workspaceFolder}"
       },
-      "dependsOn": "Build Production"
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
     },
     {
-      "label": "Install Dependencies",
-      "type": "npm",
-      "script": "install",
+      "label": "types:check",
+      "detail": "TypeScript type-check (no emit)",
+      "type": "process",
+      "command": "npx",
+      "args": [
+        "tsc",
+        "--noEmit"
+      ],
       "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
       "presentation": {
-        "echo": true,
         "reveal": "always",
-        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "lint:fix",
+      "detail": "ESLint --fix (if configured)",
+      "type": "process",
+      "command": "npx",
+      "args": [
+        "eslint",
+        ".",
+        "--ext",
+        ".ts,.tsx,.js,.jsx",
+        "--fix"
+      ],
+      "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": "$eslint-stylish",
+      "presentation": {
+        "reveal": "always",
         "panel": "shared"
       }
     }
