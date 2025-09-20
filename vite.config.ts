@@ -17,6 +17,12 @@ export default defineConfig({
   build: {
     target: 'esnext',
     sourcemap: true, // Enable source maps for production
+    minify: 'terser',
+    terserOptions: {
+      format: {
+        comments: false, // Remove all comments including license comments
+      },
+    },
   },
   // Enable source maps in development
   define: {

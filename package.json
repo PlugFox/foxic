@@ -23,6 +23,7 @@
     "@types/node": "^24.5.2",
     "firebase-tools": "^14.17.0",
     "solid-devtools": "^0.34.3",
+    "terser": "^5.44.0",
     "typescript": "^5.7.2",
     "vite": "^6.0.0",
     "vite-plugin-solid": "^2.11.8"
