@@ -60,8 +60,10 @@ jobs:
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
+          #projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
           channelId: live
+          target: foxic
+          entryPoint: .
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
@@ -83,5 +85,3 @@ jobs:
             - 📦 [Firebase Console](https://console.firebase.google.com/project/${{ secrets.FIREBASE_PROJECT_ID }}/hosting)
           draft: false
           prerelease: ${{ contains(steps.version.outputs.version, '-') }}
-          target: foxic
-          entryPoint: .
