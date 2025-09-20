@@ -1,5 +1,19 @@
 {
     "projects": {
         "default": "foxic"
-    }
+    },
+    "targets": {
+        "foxic": {
+            "hosting": {
+                "foxic": [
+                    "foxic"
+                ],
+                "i-c-o-n-s": [
+                    "i-c-o-n-s"
+                ]
+            }
+        }
+    },
+    "etags": {},
+    "dataconnectEmulatorConfig": {}
 }

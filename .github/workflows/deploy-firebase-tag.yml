@@ -83,3 +83,5 @@ jobs:
             - 📦 [Firebase Console](https://console.firebase.google.com/project/${{ secrets.FIREBASE_PROJECT_ID }}/hosting)
           draft: false
           prerelease: ${{ contains(steps.version.outputs.version, '-') }}
+          target: foxic
+          entryPoint: .
