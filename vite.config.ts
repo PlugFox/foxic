@@ -24,6 +24,6 @@ export default defineConfig({
   },
   // GitHub Pages configuration
   base: process.env.HOSTING === 'github'
-    ? '/foxic'
+    ? '/foxic/'
     : '/',
 });
