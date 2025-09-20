@@ -7,11 +7,20 @@
     "start": "vite",
     "dev": "vite",
     "build": "vite build",
-    "serve": "vite preview"
+    "serve": "vite preview",
+    "build:firebase": "vite build",
+    "build:version": "VITE_APP_VERSION=$(node -p \"require('./package.json').version\") vite build",
+    "deploy": "npm run build:firebase && firebase deploy",
+    "deploy:hosting": "npm run build:firebase && firebase deploy --only hosting",
+    "deploy:version": "npm run build:version && firebase deploy --only hosting",
+    "firebase:login": "firebase login",
+    "firebase:init": "firebase init",
+    "firebase:serve": "npm run build:firebase && firebase serve"
   },
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^24.5.2",
+    "firebase-tools": "^13.20.2",
     "solid-devtools": "^0.34.3",
     "typescript": "^5.7.2",
     "vite": "^6.0.0",
