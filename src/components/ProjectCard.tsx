@@ -6,6 +6,7 @@ interface ProjectCardProps {
   project: ProjectInfo;
   onOpen: (projectId: string) => void;
   onDelete: (projectId: string) => void;
+  onLeave?: (projectId: string) => void;
   onTogglePin?: (projectId: string) => void;
 }
 
@@ -102,16 +103,34 @@ export default function ProjectCard(props: ProjectCardProps) {
                   {props.project.pinned ? '📌 Открепить' : '📌 Закрепить'}
                 </button>
               </Show>
-              <button
-                class="project-card-menu-item project-card-menu-item--danger"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  props.onDelete(props.projectId);
-                  setShowDropdown(false);
-                }}
+              <Show
+                when={props.project.role === 'owner'}
+                fallback={
+                  <Show when={props.onLeave}>
+                    <button
+                      class="project-card-menu-item project-card-menu-item--danger"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        props.onLeave?.(props.projectId);
+                        setShowDropdown(false);
+                      }}
+                    >
+                      🚪 Покинуть проект
+                    </button>
+                  </Show>
+                }
               >
-                🗑️ Удалить
-              </button>
+                <button
+                  class="project-card-menu-item project-card-menu-item--danger"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    props.onDelete(props.projectId);
+                    setShowDropdown(false);
+                  }}
+                >
+                  🗑️ Удалить проект
+                </button>
+              </Show>
             </div>
           </Show>
         </div>

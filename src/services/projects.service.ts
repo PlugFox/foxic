@@ -140,7 +140,7 @@ class ProjectsService {
     return projectId;
   }
 
-  // Удаление проекта
+  // Удаление проекта (только владелец)
   async deleteProject(userId: string, projectId: string): Promise<void> {
     const batch = writeBatch(firestore);
 
@@ -156,7 +156,7 @@ class ProjectsService {
 
     // Проверяем права на удаление (только owner)
     if (project.owner !== userId) {
-      throw new Error('Недостаточно прав для удаления проекта');
+      throw new Error('Только владелец может удалить проект');
     }
 
     // Удаляем проект
@@ -177,6 +177,58 @@ class ProjectsService {
           updatedAt: serverTimestamp()
         });
       }
+    }
+
+    await batch.commit();
+  }
+
+  // Покинуть проект (для не-владельцев)
+  async leaveProject(userId: string, projectId: string): Promise<void> {
+    const batch = writeBatch(firestore);
+
+    // Получаем проект для проверки
+    const projectRef = doc(firestore, `projects/${projectId}`);
+    const projectSnapshot = await getDoc(projectRef);
+
+    if (!projectSnapshot.exists()) {
+      throw new Error('Проект не найден');
+    }
+
+    const project = projectSnapshot.data() as Omit<Project, 'id'>;
+
+    // Владелец не может покинуть проект, только удалить его
+    if (project.owner === userId) {
+      throw new Error('Владелец не может покинуть проект. Удалите проект или передайте права владения.');
+    }
+
+    // Проверяем, что пользователь является участником проекта
+    if (!project.members[userId]) {
+      throw new Error('Вы не являетесь участником этого проекта');
+    }
+
+    // Удаляем пользователя из участников проекта
+    const updatedMembers = { ...project.members };
+    delete updatedMembers[userId];
+
+    batch.set(projectRef, {
+      ...project,
+      members: updatedMembers,
+      updatedAt: serverTimestamp()
+    });
+
+    // Удаляем проект из списка проектов пользователя
+    const userProjectsRef = doc(firestore, `users/${userId}/data/projects`);
+    const userProjectsSnapshot = await getDoc(userProjectsRef);
+
+    if (userProjectsSnapshot.exists()) {
+      const userData = userProjectsSnapshot.data() as UserProjectsData;
+      const userProjects = { ...userData.projects };
+      delete userProjects[projectId];
+
+      batch.set(userProjectsRef, {
+        projects: userProjects,
+        updatedAt: serverTimestamp()
+      });
     }
 
     await batch.commit();

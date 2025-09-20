@@ -14,8 +14,8 @@ export default function HomePage() {
   const [projects, setProjects] = createSignal<Record<string, ProjectInfo>>({});
   const [isLoading, setIsLoading] = createSignal(true);
   const [showNewProjectDialog, setShowNewProjectDialog] = createSignal(false);
-  const [showDeleteDialog, setShowDeleteDialog] = createSignal(false);
-  const [projectToDelete, setProjectToDelete] = createSignal<{id: string, name: string} | null>(null);
+  const [showActionDialog, setShowActionDialog] = createSignal(false);
+  const [projectAction, setProjectAction] = createSignal<{id: string, name: string, isOwner: boolean} | null>(null);
 
   let unsubscribe: (() => void) | null = null;
 
@@ -62,35 +62,58 @@ export default function HomePage() {
     const currentUser = user();
     if (!currentUser) return;
 
-    await projectsService.createProject(
-      currentUser.uid,
-      currentUser.email || '',
-      currentUser.displayName || currentUser.email || 'Пользователь',
-      currentUser.photoURL,
-      projectData
-    );
+    try {
+      await projectsService.createProject(
+        currentUser.uid,
+        currentUser.email || '',
+        currentUser.displayName || currentUser.email || 'Пользователь',
+        currentUser.photoURL,
+        projectData
+      );
+    } catch (error) {
+      console.error('Ошибка создания проекта:', error);
+      // В реальном приложении здесь можно показать toast-уведомление
+      throw error; // Пробрасываем ошибку в диалог для обработки
+    }
   };
 
   const handleDeleteProject = (projectId: string) => {
     const project = projects()[projectId];
     if (project) {
-      setProjectToDelete({ id: projectId, name: project.name });
-      setShowDeleteDialog(true);
+      setProjectAction({ id: projectId, name: project.name, isOwner: project.role === 'owner' });
+      setShowActionDialog(true);
     }
   };
 
-  const handleConfirmDelete = async () => {
-    const currentUser = user();
-    const toDelete = projectToDelete();
-
-    if (!currentUser || !toDelete) return;
-
-    await projectsService.deleteProject(currentUser.uid, toDelete.id);
-    setProjectToDelete(null);
-    setShowDeleteDialog(false);
+  const handleLeaveProject = (projectId: string) => {
+    const project = projects()[projectId];
+    if (project) {
+      setProjectAction({ id: projectId, name: project.name, isOwner: false });
+      setShowActionDialog(true);
+    }
   };
 
-  const handleTogglePin = async (projectId: string) => {
+  const handleConfirmAction = async () => {
+    const currentUser = user();
+    const action = projectAction();
+
+    if (!currentUser || !action) return;
+
+    try {
+      if (action.isOwner) {
+        await projectsService.deleteProject(currentUser.uid, action.id);
+      } else {
+        await projectsService.leaveProject(currentUser.uid, action.id);
+      }
+
+      setProjectAction(null);
+      setShowActionDialog(false);
+    } catch (error) {
+      console.error('Ошибка при выполнении действия:', error);
+      // В реальном приложении здесь можно показать toast-уведомление
+      alert(`Ошибка: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`);
+    }
+  };  const handleTogglePin = async (projectId: string) => {
     const currentUser = user();
     if (!currentUser) return;
 
@@ -171,6 +194,7 @@ export default function HomePage() {
                     project={project}
                     onOpen={handleOpenProject}
                     onDelete={handleDeleteProject}
+                    onLeave={handleLeaveProject}
                     onTogglePin={handleTogglePin}
                   />
                 )}
@@ -188,16 +212,20 @@ export default function HomePage() {
       />
 
       <ConfirmDialog
-        isOpen={showDeleteDialog()}
-        title="Удалить проект"
-        message={`Вы уверены, что хотите удалить проект "${projectToDelete()?.name}"? Это действие нельзя отменить.`}
-        confirmText="Удалить"
+        isOpen={showActionDialog()}
+        title={projectAction()?.isOwner ? "Удалить проект" : "Покинуть проект"}
+        message={
+          projectAction()?.isOwner
+            ? `Вы уверены, что хотите удалить проект "${projectAction()?.name}"? Это действие нельзя отменить.`
+            : `Вы уверены, что хотите покинуть проект "${projectAction()?.name}"? Вы потеряете доступ к проекту.`
+        }
+        confirmText={projectAction()?.isOwner ? "Удалить" : "Покинуть"}
         cancelText="Отмена"
         isDestructive={true}
-        onConfirm={handleConfirmDelete}
+        onConfirm={handleConfirmAction}
         onCancel={() => {
-          setShowDeleteDialog(false);
-          setProjectToDelete(null);
+          setShowActionDialog(false);
+          setProjectAction(null);
         }}
       />
     </div>
