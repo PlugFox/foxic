@@ -37,7 +37,7 @@
             "name": "web:chrome:new",
             "type": "chrome",
             "request": "launch",
-            "url": "http://127.0.0.1:5173",
+            "url": "http://localhost:5173",
             "webRoot": "${workspaceFolder}",
             "userDataDir": "${workspaceFolder}/.vscode/chrome-debug",
             "runtimeArgs": [
@@ -65,7 +65,7 @@
             "request": "attach",
             "port": 9222,
             "webRoot": "${workspaceFolder}",
-            "url": "http://127.0.0.1:5173",
+            "url": "http://localhost:5173",
             "presentation": {
                 "group": "Chrome",
                 "order": 2
@@ -76,7 +76,7 @@
             "name": "web:edge:new",
             "type": "msedge",
             "request": "launch",
-            "url": "http://127.0.0.1:5173",
+            "url": "http://localhost:5173",
             "webRoot": "${workspaceFolder}",
             "presentation": {
                 "group": "Edge",
