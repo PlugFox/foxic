@@ -1,12 +1,19 @@
-# Firebase Deployment Guide
+# Deployment Guide
 
-This guide covers how to deploy your Foxic application to Firebase Hosting both manually and automatically.
+This guide covers how to deploy your Foxic application to Firebase Hosting and GitHub Pages both manually and automatically.
 
 ## Prerequisites
 
+### For Firebase Hosting
 1. **Firebase Project**: Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
 2. **Firebase CLI**: Install globally with `npm install -g firebase-tools`
-3. **GitHub Secrets**: Configure repository secrets for automatic deployment
+
+### For GitHub Pages
+1. **GitHub Repository**: Repository with Pages enabled
+2. **GitHub Actions**: Enabled in repository settings
+
+### Common Requirements
+- **GitHub Secrets**: Configure repository secrets for deployment
 
 ## Initial Setup
 
@@ -92,19 +99,40 @@ git push origin 1.0.0-beta
 - `1.0.0-beta` - Pre-release (marked as draft in GitHub)
 - `1.0.0-alpha.1` - Pre-release with additional identifier
 
+## GitHub Pages Deployment
+
+### Automatic Deployment
+GitHub Pages deployment happens automatically on every push to `master` branch.
+
+### Manual GitHub Pages Deployment
+1. Go to your repository on GitHub
+2. Navigate to "Actions" tab
+3. Find "Deploy to GitHub Pages" workflow
+4. Click "Run workflow"
+5. **Optional**: Specify app version (if empty, uses package.json version)
+6. Click "Run workflow"
+
+### GitHub Pages Features
+- **Automatic Deployment**: Triggers on every push to master
+- **Version Injection**: Uses package.json version or manual input
+- **Environment Variables**: Supports Firebase config from secrets
+- **Build Summary**: Detailed deployment information in Actions
+- **Quick Links**: Direct links to deployed site and settings
+
 ## Required GitHub Secrets
 
 Configure these secrets in your GitHub repository settings (Settings → Secrets and variables → Actions):
 
-### Firebase Configuration
-- `VITE_FIREBASE_API_KEY` - Your Firebase API key
-- `VITE_FIREBASE_AUTH_DOMAIN` - Your Firebase auth domain
-- `VITE_FIREBASE_PROJECT_ID` - Your Firebase project ID
-- `VITE_FIREBASE_STORAGE_BUCKET` - Your Firebase storage bucket
-- `VITE_FIREBASE_MESSAGING_SENDER_ID` - Your Firebase messaging sender ID
-- `VITE_FIREBASE_APP_ID` - Your Firebase app ID
+### Firebase Configuration (Required for both Firebase and GitHub Pages)
+- `FIREBASE_API_KEY` - Your Firebase API key
+- `FIREBASE_AUTH_DOMAIN` - Your Firebase auth domain
+- `FIREBASE_PROJECT_ID` - Your Firebase project ID
+- `FIREBASE_STORAGE_BUCKET` - Your Firebase storage bucket
+- `FIREBASE_MESSAGING_SENDER_ID` - Your Firebase messaging sender ID
+- `FIREBASE_APP_ID` - Your Firebase app ID
+- `FIREBASE_MEASUREMENT_ID` - Your Firebase measurement ID (optional)
 
-### Firebase Service Account
+### Firebase Service Account (Required only for Firebase Hosting)
 - `FIREBASE_SERVICE_ACCOUNT` - Firebase service account JSON (see below)
 
 ### Creating Firebase Service Account
@@ -209,12 +237,18 @@ firebase --version
 ## Monitoring
 
 ### Firebase Console
-- [Hosting Dashboard](https://console.firebase.google.com/project/YOUR_PROJECT_ID/hosting)
-- [Usage Analytics](https://console.firebase.google.com/project/YOUR_PROJECT_ID/analytics)
+- [Hosting Dashboard](https://console.firebase.google.com/project/i-c-o-n-s/hosting)
+- [Usage Analytics](https://console.firebase.google.com/project/i-c-o-n-s/analytics)
+
+### GitHub Pages
+- [Pages Settings](https://github.com/PlugFox/foxic/settings/pages)
+- [Deployments History](https://github.com/PlugFox/foxic/deployments)
+- [Live Site](https://plugfox.github.io/foxic/)
 
 ### GitHub Actions
 - Monitor deployment status in repository's Actions tab
 - Check deployment logs for troubleshooting
+- View build summaries with version and deployment info
 
 ## Advanced Configuration
 

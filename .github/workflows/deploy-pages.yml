@@ -2,17 +2,26 @@ name: Deploy to GitHub Pages
 
 on:
   workflow_dispatch:
+    inputs:
+         - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+      - name: Build Summary
+        run: |
+          echo "## 📦 Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: GitHub Pages" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build Time**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARYpp_version:
+        description: 'App version (optional, will use package.json version if not specified)'
+        required: false
+        type: string
 
   push:
     branches:
       - master
-    paths:
-      - 'src/**'
-      - 'public/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'tsconfig.json'
-      - '.github/workflows/deploy-pages.yml'
 
 permissions:
   contents: read
@@ -41,11 +50,31 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Extract version
+        id: version
+        run: |
+          if [ -n "${{ github.event.inputs.app_version }}" ]; then
+            VERSION="${{ github.event.inputs.app_version }}"
+            echo "Using provided version: $VERSION"
+          else
+            VERSION=$(node -p "require('./package.json').version")
+            echo "Using package.json version: $VERSION"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Build application
         run: npm run build
         env:
           HOSTING: github
           PUBLIC_URL: /foxic
+          VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
+          VITE_APP_VERSION: ${{ steps.version.outputs.version }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -67,3 +96,14 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Deployment Summary
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ✅ Successfully deployed" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL**: ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Deploy Time**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔗 Quick Links" >> $GITHUB_STEP_SUMMARY
+          echo "- [🌐 Live Site](${{ steps.deployment.outputs.page_url }})" >> $GITHUB_STEP_SUMMARY
+          echo "- [📊 GitHub Pages Settings](https://github.com/PlugFox/foxic/settings/pages)" >> $GITHUB_STEP_SUMMARY
