@@ -4,8 +4,6 @@ import { authService, type AuthUser } from '../services/auth.service';
 interface AuthContextType {
   user: Accessor<AuthUser | null>;
   loading: Accessor<boolean>;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -27,22 +25,6 @@ export const AuthProvider: ParentComponent = (props) => {
     return unsubscribe;
   });
 
-  const signIn = async (email: string, password: string) => {
-    try {
-      await authService.signInWithEmail(email, password);
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  const signUp = async (email: string, password: string) => {
-    try {
-      await authService.signUpWithEmail(email, password);
-    } catch (error) {
-      throw error;
-    }
-  };
-
   const signInWithGoogle = async () => {
     try {
       await authService.signInWithGoogle();
@@ -62,8 +44,6 @@ export const AuthProvider: ParentComponent = (props) => {
   const value: AuthContextType = {
     user,
     loading,
-    signIn,
-    signUp,
     signInWithGoogle,
     signOut,
   };

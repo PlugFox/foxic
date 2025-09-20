@@ -1,5 +1,5 @@
 import { Route, Router } from '@solidjs/router';
-import { ProtectedRoute, PublicRoute } from './components/routes';
+import { CatchAllRoute, ProtectedRoute, PublicRoute } from './components/routes';
 import { AuthProvider } from './contexts/auth.context';
 import HomePage from './pages/home';
 import LoginPage from './pages/login';
@@ -25,6 +25,7 @@ function App() {
             </ProtectedRoute>
           )}
         />
+        <Route path="/*all" component={CatchAllRoute} />
       </Router>
     </AuthProvider>
   );
