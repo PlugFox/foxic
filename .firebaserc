@@ -3,7 +3,7 @@
         "default": "i-c-o-n-s"
     },
     "targets": {
-        "foxic": {
+        "i-c-o-n-s": {
             "hosting": {
                 "foxic": [
                     "foxic"
