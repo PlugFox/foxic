@@ -16,9 +16,9 @@ on:
         required: false
         type: string
 
-  push:
-    branches:
-      - master
+  #push:
+  #  branches:
+  #    - master
 
 permissions:
   contents: read
