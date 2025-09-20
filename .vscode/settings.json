@@ -1,0 +1,47 @@
+{
+    "typescript.preferences.importModuleSpecifier": "relative",
+    "typescript.suggest.autoImports": true,
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit",
+        "source.organizeImports": "explicit"
+    },
+    "files.associations": {
+        "*.tsx": "typescriptreact",
+        "*.ts": "typescript"
+    },
+    "emmet.includeLanguages": {
+        "typescriptreact": "html"
+    },
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/dist": true,
+        "**/.vite": true,
+        "**/coverage": true
+    },
+    "files.exclude": {
+        "**/node_modules": true,
+        "**/dist": true,
+        "**/.vite": true
+    },
+    "css.validate": true,
+    "scss.validate": true,
+    "liveServer.settings.port": 3000,
+    "simpleBrowser.focusLockIndicator.enabled": true,
+    "workbench.colorCustomizations": {
+        "activityBar.activeBorder": "#4f46e5",
+        "activityBar.activeBackground": "#4f46e520"
+    },
+    "git.autofetch": true,
+    "git.confirmSync": false,
+    "terminal.integrated.defaultProfile.osx": "zsh",
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.patterns": {
+        "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml",
+        "tsconfig.json": "tsconfig.*.json",
+        "vite.config.*": "vite.config.*",
+        ".env": ".env.*",
+        "README.md": "LICENSE, CHANGELOG.md, CONTRIBUTING.md"
+    }
+}

@@ -1,0 +1,133 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "🖥️ Start Dev Server",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/node_modules/.bin/vite",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "NODE_ENV": "development"
+            },
+            "console": "integratedTerminal",
+            "serverReadyAction": {
+                "pattern": "Local:.*?(https?://localhost:\\d+)",
+                "uriFormat": "%s",
+                "action": "openExternally"
+            },
+            "presentation": {
+                "hidden": false,
+                "group": "development",
+                "order": 1
+            }
+        },
+        {
+            "name": "🐛 Debug Client Code (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:3000",
+            "webRoot": "${workspaceFolder}/src",
+            "sourceMaps": true,
+            "smartStep": true,
+            "skipFiles": [
+                "<node_internals>/**",
+                "**/node_modules/**"
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "debug",
+                "order": 1
+            }
+        },
+        {
+            "name": "🐛 Debug Client Code (Edge)",
+            "type": "msedge",
+            "request": "launch",
+            "url": "http://localhost:3000",
+            "webRoot": "${workspaceFolder}/src",
+            "sourceMaps": true,
+            "smartStep": true,
+            "skipFiles": [
+                "<node_internals>/**",
+                "**/node_modules/**"
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "debug",
+                "order": 2
+            }
+        },
+        {
+            "name": "🔗 Attach to Chrome",
+            "type": "chrome",
+            "request": "attach",
+            "port": 9222,
+            "webRoot": "${workspaceFolder}/src",
+            "sourceMaps": true,
+            "skipFiles": [
+                "<node_internals>/**",
+                "**/node_modules/**"
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "debug",
+                "order": 3
+            }
+        },
+        {
+            "name": "Build and Preview",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/node_modules/.bin/vite",
+            "args": [
+                "build",
+                "&&",
+                "vite",
+                "preview"
+            ],
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "NODE_ENV": "production"
+            },
+            "console": "integratedTerminal",
+            "serverReadyAction": {
+                "pattern": "Local:.*?(https?://\\S+)",
+                "uriFormat": "%s",
+                "action": "openExternally"
+            },
+            "presentation": {
+                "hidden": false,
+                "group": "production",
+                "order": 3
+            }
+        }
+    ],
+    "compounds": [
+        {
+            "name": "🚀 Start Foxic Development",
+            "configurations": [
+                "🖥️ Start Dev Server"
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "main",
+                "order": 1
+            }
+        },
+        {
+            "name": "🐛 Debug Foxic (Server + Chrome)",
+            "configurations": [
+                "🖥️ Start Dev Server",
+                "🐛 Debug Client Code (Chrome)"
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "debug",
+                "order": 1
+            },
+            "stopAll": true
+        }
+    ]
+}

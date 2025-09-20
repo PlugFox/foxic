@@ -1,0 +1,61 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Vite Dev Server",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "npm",
+            "args": [
+                "run",
+                "dev",
+                "--",
+                "--strictPort",
+                "--port",
+                "5173",
+                "--host"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "autoAttachChildProcesses": true,
+            "env": {
+                "FORCE_COLOR": "1"
+            },
+            "serverReadyAction": {
+                "pattern": "Local:\\s*(https?://localhost:\\d+)",
+                "uriFormat": "%s",
+                "action": "debugWithChrome"
+            }
+        },
+        {
+            "name": "Launch SolidJS (Chrome)",
+            "type": "pwa-chrome",
+            "request": "launch",
+            "url": "http://127.0.0.1:5173",
+            "webRoot": "${workspaceFolder}",
+            "userDataDir": "${workspaceFolder}/.vscode/chrome-debug",
+            "runtimeArgs": [
+                "--remote-debugging-port=9222"
+            ],
+            "smartStep": true,
+            "skipFiles": [
+                "**/node_modules/**",
+                "<node_internals>/**"
+            ],
+            "sourceMapPathOverrides": {
+                "webpack:///src/*": "${webRoot}/src/*",
+                "vite/dist/*": "${webRoot}/*",
+                "*/src/*": "${webRoot}/src/*"
+            }
+        }
+    ],
+    "compounds": [
+        {
+            "name": "SolidJS Full Debug",
+            "configurations": [
+                "Run Vite Dev Server",
+                "Launch SolidJS (Chrome)"
+            ]
+        }
+    ]
+}
