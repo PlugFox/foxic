@@ -1,11 +1,9 @@
 import {
-    GoogleAuthProvider,
-    User,
-    createUserWithEmailAndPassword,
-    onAuthStateChanged,
-    signInWithEmailAndPassword,
-    signInWithPopup,
-    signOut
+  GoogleAuthProvider,
+  User,
+  onAuthStateChanged,
+  signInWithPopup,
+  signOut
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
 
@@ -33,18 +31,6 @@ class AuthService {
       displayName: user.displayName,
       photoURL: user.photoURL,
     };
-  }
-
-  // Вход с email и паролем
-  async signInWithEmail(email: string, password: string): Promise<AuthUser> {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    return this.mapUser(userCredential.user);
-  }
-
-  // Регистрация с email и паролем
-  async signUpWithEmail(email: string, password: string): Promise<AuthUser> {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    return this.mapUser(userCredential.user);
   }
 
   // Вход с Google
