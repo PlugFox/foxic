@@ -12,7 +12,7 @@ on:
           - production
           - staging
       app_version:
-        description: "App version (optional, will use package.json version if not specified)"
+        description: "App version"
         required: false
         type: string
 
