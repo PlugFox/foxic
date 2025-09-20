@@ -1,45 +1,83 @@
 {
-    "hosting": {
-        "public": "dist",
-        "ignore": [
-            "firebase.json",
-            "**/.*",
-            "**/node_modules/**"
-        ],
-        "rewrites": [
-            {
-                "source": "**",
-                "destination": "/index.html"
-            }
-        ],
-        "headers": [
-            {
-                "source": "**/*.@(eot|otf|ttf|ttc|woff|font.css)",
-                "headers": [
-                    {
-                        "key": "Access-Control-Allow-Origin",
-                        "value": "*"
-                    }
-                ]
-            },
-            {
-                "source": "**/*.@(js|css|map|ico|png|jpg|jpeg|gif|svg|webp)",
-                "headers": [
-                    {
-                        "key": "Cache-Control",
-                        "value": "max-age=31536000"
-                    }
-                ]
-            },
-            {
-                "source": "**/index.html",
-                "headers": [
-                    {
-                        "key": "Cache-Control",
-                        "value": "no-cache, no-store, must-revalidate"
-                    }
-                ]
-            }
-        ]
+    "hosting": [
+        {
+            "target": "foxic",
+            "public": "dist",
+            "ignore": [
+                "firebase.json",
+                "**/.*",
+                "**/node_modules/**"
+            ],
+            "rewrites": [
+                {
+                    "source": "/sw.js",
+                    "destination": "/sw.js"
+                },
+                {
+                    "source": "/manifest.json",
+                    "destination": "/manifest.json"
+                },
+                {
+                    "source": "**",
+                    "destination": "/index.html"
+                }
+            ],
+            "headers": [
+                {
+                    "source": "**/*.@(eot|otf|ttf|ttc|woff|font.css)",
+                    "headers": [
+                        {
+                            "key": "Access-Control-Allow-Origin",
+                            "value": "*"
+                        }
+                    ]
+                },
+                {
+                    "source": "**/*.@(jpg|jpeg|gif|png|svg|webp|ico|mp3|css|eot|otf|ttf|ttc|woff|woff2)",
+                    "headers": [
+                        {
+                            "key": "Cache-Control",
+                            "value": "public, max-age=604800, s-maxage=1209600, immutable"
+                        }
+                    ]
+                },
+                {
+                    "source": "**/*.json",
+                    "headers": [
+                        {
+                            "key": "Cache-Control",
+                            "value": "no-store"
+                        }
+                    ]
+                },
+                {
+                    "source": "**/index.html",
+                    "headers": [
+                        {
+                            "key": "Cache-Control",
+                            "value": "no-cache, no-store, must-revalidate"
+                        }
+                    ]
+                },
+                {
+                    "source": "**/*.@(wasm|mjs|js)",
+                    "headers": [
+                        {
+                            "key": "Cache-Control",
+                            "value": "no-cache, max-age=0, must-revalidate"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "emulators": {
+        "hosting": {
+            "port": 5000
+        },
+        "ui": {
+            "enabled": true
+        },
+        "singleProjectMode": true
     }
 }
