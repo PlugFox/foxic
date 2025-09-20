@@ -1,0 +1,11 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Фон для iOS -->
+  <rect width="180" height="180" rx="20" fill="#2563eb"/>
+
+  <!-- Основная иконка - стилизованная буква F -->
+  <path d="M45 45h90v22H75v19h45v22H75v27H45V45z" fill="white"/>
+
+  <!-- Дополнительные элементы -->
+  <circle cx="135" cy="135" r="11" fill="white" opacity="0.8"/>
+  <rect x="112" y="150" width="23" height="7" rx="3" fill="white" opacity="0.6"/>
+</svg>

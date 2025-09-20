@@ -1294,3 +1294,41 @@ body {
         padding: 1rem;
     }
 }
+
+/* PWA стили */
+.app-footer {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.pwa-info-btn {
+    padding: 8px 12px;
+    background: rgba(79, 70, 229, 0.9);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 0.875rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(10px);
+    transition: all 0.2s;
+}
+
+.pwa-info-btn:hover {
+    background: rgba(67, 56, 202, 0.95);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+}
+
+/* PWA в режиме standalone */
+@media (display-mode: standalone) {
+    .pwa-info-btn {
+        background: rgba(16, 185, 129, 0.9);
+    }
+
+    .pwa-info-btn:hover {
+        background: rgba(5, 150, 105, 0.95);
+    }
+}

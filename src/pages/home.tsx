@@ -137,6 +137,21 @@ export default function HomePage() {
     });
   };
 
+  const handlePWAInfo = () => {
+    const isInstalled = window.matchMedia('(display-mode: standalone)').matches;
+    const hasServiceWorker = 'serviceWorker' in navigator;
+    const isOnline = navigator.onLine;
+
+    const info = [
+      `PWA установлено: ${isInstalled ? '✅' : '❌'}`,
+      `Service Worker: ${hasServiceWorker ? '✅' : '❌'}`,
+      `Онлайн: ${isOnline ? '✅' : '❌'}`,
+      `Кэш: ${('caches' in window) ? '✅' : '❌'}`
+    ].join('\n');
+
+    alert(`Статус PWA:\n\n${info}`);
+  };
+
   return (
     <div class="home-container">
       <header class="app-header">
@@ -204,6 +219,12 @@ export default function HomePage() {
           </Show>
         </div>
       </main>
+
+      <footer class="app-footer">
+        <button onClick={handlePWAInfo} class="pwa-info-btn" title="Информация о PWA">
+          📱 PWA
+        </button>
+      </footer>
 
       <NewProjectDialog
         isOpen={showNewProjectDialog()}

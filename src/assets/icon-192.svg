@@ -1,0 +1,11 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Фон -->
+  <rect width="192" height="192" rx="24" fill="#2563eb"/>
+
+  <!-- Основная иконка - стилизованная буква F -->
+  <path d="M48 48h96v24H80v20h48v24H80v28H48V48z" fill="white"/>
+
+  <!-- Дополнительные элементы для "иконочности" -->
+  <circle cx="144" cy="144" r="12" fill="white" opacity="0.8"/>
+  <rect x="120" y="160" width="24" height="8" rx="4" fill="white" opacity="0.6"/>
+</svg>
