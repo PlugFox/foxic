@@ -14,7 +14,6 @@ Collection for user profiles and preferences.
 
 ```
 users/{uid}
-    uid: string                 // Firebase Auth UID
     email: string               // user email
     name: string                // user display name
     avatar: string              // avatar URL
@@ -138,14 +137,14 @@ service cloud.firestore {
       return role in ['owner', 'admin'];
     }
 
-    // Users: own profile only
+    // Users: own profile and data only
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
 
-    // User projects: own project list only
-    match /users/{userId}/data/projects {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // User projects subcollection: own project list only
+      match /data/{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
 
     // Projects: member access with role-based permissions
@@ -193,8 +192,6 @@ service firebase.storage {
       allow write: if canEditProject(projectId) &&
                      resource == null; // Only creation allowed (immutable)
     }
-
-
   }
 }
 ```
