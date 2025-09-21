@@ -37,8 +37,6 @@ users/{uid}/data/projects
             name: string        // Denormalized project name for quick display
             notifications: int  // Count of unread changes
             pinned: boolean     // User can pin favorite projects
-            // Removed lastAccessed to avoid frequent writes
-            // Use client-side tracking or batch updates instead
         }
     }
 ```
@@ -226,7 +224,6 @@ interface ArchiveValidation {
 // Instead of individual writes for user activity tracking
 // Use client-side batching with periodic sync
 interface BatchedUpdates {
-  lastAccessed: Record<string, timestamp>; // Batch multiple project accesses
   syncInterval: 5 * 60 * 1000; // Sync every 5 minutes
   maxBatchSize: 10; // Max operations per batch
 }
@@ -299,7 +296,6 @@ interface LazyUserDetails {
 - **Member management**: Minimal project member data + on-demand user lookups only when needed
 - **No expensive queries**: Avoided `array-contains` and complex filtering
 - **Dedicated archive document**: All icon data and metadata in single archive document
-- **Eliminated frequent updates**: Removed lastAccessed, lastActive, updatedAt from hot paths
 
 ### Blob Storage Efficiency
 - **1MB document limit**: Each archive document respects Firestore's document size limit

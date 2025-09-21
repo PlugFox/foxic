@@ -122,8 +122,7 @@ export default function HomePage() {
       // Сначала закрепленные
       if (a.pinned && !b.pinned) return -1;
       if (!a.pinned && b.pinned) return 1;
-
-      // Затем по алфавиту (без lastAccessed для экономии записей)
+      // Потом по имени
       return a.name.localeCompare(b.name);
     });
   };
