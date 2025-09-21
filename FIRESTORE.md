@@ -1,9 +1,10 @@
-# Firestore & Storage Data Model for Icon Font Projects
+# Firestore Data Model for Icon Font Projects
 
-This document describes the complete data model and storage structure for a service where users can create projects, upload SVG icons, and generate icon fonts.
-Authentication is handled by **Firebase Authentication**, access control by **Firestore Security Rules**, and bulk icon storage by **Firebase Storage**.
+This document describes the data model for a service where users can create projects, upload SVG icons, and generate icon fonts.
 
-**Design Philosophy**: Minimize Firestore reads/writes through denormalization, immutable storage patterns, and aggressive client-side caching.
+Authentication is handled by **Firebase Authentication**, access control by **Firestore Security Rules**, and icon storage by **compressed blobs in Firestore documents**.
+
+**Design Philosophy**: Minimize Firestore reads/writes through denormalization, compressed blob storage in dedicated documents, and aggressive client-side caching. SVG icons are stored as fflate-compressed archives with a 1MB size limit per document.
 
 ---
 
@@ -68,37 +69,59 @@ projects/{projectId}
     updatedAt: timestamp
 ```
 
-### Project Metadata
-Document containing the current archive metadata for the project’s SVG set.
+### Project Icons Archive
+Document containing the compressed SVG icons archive with embedded manifest. All metadata is contained within the manifest.json inside the archive.
 
 ```
-projects/{projectId}/data/icons_meta
-    rev: int                    // incremented on each save
-    hash: string                // sha256 of sorted icon set
-    storage: string             // Storage path: "bundles/{projectId}/{hash}/icons.zip"
-    size: int                   // archive size in bytes
-    count: int                  // number of icons
+projects/{projectId}/data/icons
+    archive: bytes              // fflate-compressed archive containing:
+                                //   - manifest.json (all metadata: rev, hash, count, icons info)
+                                //   - SVG files
     updatedBy: string           // UID of last updater
     updatedAt: timestamp
 ```
 
 ---
 
-## Firebase Storage Structure
+## Archive Storage Structure
 
-**Immutable Storage Pattern**: Archives are never modified, only created. This enables aggressive CDN caching and prevents storage conflicts.
+**Compressed Blob Pattern**: SVG icons are stored as fflate-compressed blobs in dedicated Firestore documents with 1MB size limits per document.
 
+**Archive Structure (within compressed blob):**
 ```
-bundles/{projectId}/{hash}/icons.zip    // Main archive with all SVG icons
+icons.zip (fflate compressed)
+├── manifest.json              // All metadata: rev, hash, count, icon mappings, etc.
+├── icons/
+│   ├── icon1.svg
+│   ├── icon2.svg
+│   └── ...
+```
+
+**Manifest.json Structure:**
+```json
+{
+  "rev": 1,
+  "hash": "sha256_hash_of_sorted_icons",
+  "count": 10,
+  "totalSize": 45000,
+  "compression": 0.75,
+  "icons": {
+    "icon1": {
+      "size": 1200,
+      "hash": "individual_svg_hash",
+      "tags": ["ui", "arrow"]
+    },
+    "icon2": { ... }
+  },
+  "createdAt": "2025-09-21T10:00:00Z"
+}
 ```
 
 **Storage Optimization Features:**
-- `hash` is deterministic SHA256 over sorted `{iconName, iconSHA256}` pairs
-- Immutable: once uploaded, never overwritten (enables infinite caching)
-- Automatic deduplication: identical icon sets share the same hash
-- CDN-friendly headers: `Cache-Control: public, max-age=31536000, immutable`
-- Compressed archives reduce bandwidth and storage costs
-- **Client-side font generation**: Fonts are generated in browser from SVG data
+- **1MB document limit**: Each archive document respects Firestore's document size limit
+- **fflate compression**: High compression ratio for SVG files
+- **Embedded manifest**: All metadata included in archive for single-read access
+- **Client-side font generation**: Fonts are generated in browser from decompressed SVG data
 
 ---
 
@@ -153,8 +176,8 @@ service cloud.firestore {
                      resource.data.visibility == 'public';
       allow write: if canAdmin(projectId);
 
-      // Project metadata: editors can modify icon data
-      match /data/icons_meta {
+      // Project icons archive: editors can modify icon archives
+      match /data/icons {
         allow read: if isProjectMember(projectId) ||
                        get(/databases/$(database)/documents/projects/$(projectId)).data.visibility == 'public';
         allow write: if canEdit(projectId);
@@ -164,61 +187,48 @@ service cloud.firestore {
 }
 ```
 
-### Storage Security Rules
-```javascript
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
+### Archive Size Validation
+**Frontend Validation**: The client enforces the 1MB size limit before attempting to save to Firestore.
 
-    function isProjectMember(projectId) {
-      return request.auth != null &&
-             request.auth.uid in firestore.get(/databases/(default)/documents/projects/$(projectId)).data.members;
-    }
+```typescript
+// Frontend size validation before Firestore write
+interface ArchiveValidation {
+  MAX_ARCHIVE_SIZE: 1_000_000; // 1MB in bytes (Firestore document limit)
 
-    function canEditProject(projectId) {
-      let doc = firestore.get(/databases/(default)/documents/projects/$(projectId));
-      let role = doc.data.members[request.auth.uid].role;
-      return role in ['owner', 'admin', 'editor'];
+  validateArchive(compressedData: Uint8Array): boolean {
+    if (compressedData.length > this.MAX_ARCHIVE_SIZE) {
+      throw new Error(`Archive size ${compressedData.length} exceeds Firestore document limit of ${this.MAX_ARCHIVE_SIZE} bytes`);
     }
-
-    function isPublicProject(projectId) {
-      let doc = firestore.get(/databases/(default)/documents/projects/$(projectId));
-      return doc.data.visibility == 'public';
-    }
-
-    // Icon bundles: immutable SVG archives only
-    match /bundles/{projectId}/{hash}/icons.zip {
-      allow read: if isProjectMember(projectId) || isPublicProject(projectId);
-      allow write: if canEditProject(projectId) &&
-                     resource == null; // Only creation allowed (immutable)
-    }
+    return true;
   }
 }
 ```
+
+**Note**: All icon data and metadata are stored directly in Firestore documents as compressed blobs. No external storage dependencies.
 
 ---
 
 ## Optimized User Flows
 
-### Save Project (Client → Backend)
-**Cost**: 1 Firestore write + 1 Storage upload per unique icon set
+### Save Project (Client → Firestore)
+**Cost**: 1 Firestore write per icon set update
 1. User modifies icons in client memory
-2. Client calculates deterministic `hash` from sorted `{iconName, iconSHA256}` pairs
-3. Check if hash already exists in Storage (avoid duplicate uploads)
-4. If new hash:
-   - Zip all SVG icons into `icons.zip`
-   - Upload to `bundles/{projectId}/{hash}/icons.zip` (resumable upload)
-5. Update Firestore `icons_meta` document atomically
+2. Client validates total archive size will not exceed 1MB limit
+3. Client creates manifest.json with all metadata (rev, hash, count, icon info)
+4. Client compresses archive (SVGs + manifest) using fflate
+5. Update Firestore `projects/{projectId}/data/icons` document atomically with compressed blob
 6. Update `users/{uid}/data/projects` with denormalized project info (1 additional write)
 
 ### Load Project (Client)
-**Cost**: 1 Firestore read + conditional Storage download
-1. Read `projects/{projectId}/data/icons_meta` (1 Firestore read - all project data)
-2. Check client cache using `hash`
-3. If cache miss or expired:
-   - Download `bundles/{projectId}/{hash}/icons.zip`
-4. Unzip and cache SVGs locally
-5. **Client-side font generation**: Generate fonts in browser when user exports
+**Cost**: 1 Firestore read (all data in single document)
+1. Read `projects/{projectId}/data/icons` (1 Firestore read - compressed archive with all data)
+2. Decompress blob using fflate
+3. Extract manifest.json to get metadata (rev, hash, count, icon info)
+4. Check client cache using `hash` from manifest
+5. If cache miss or expired:
+   - Extract SVGs from archive
+   - Cache decompressed data locally
+6. **Client-side font generation**: Generate fonts in browser when user exports
 
 ### Load User Dashboard
 **Cost**: 1 Firestore read (no expensive queries)
@@ -246,31 +256,34 @@ service firebase.storage {
 
 ### Firestore Read/Write Minimization
 - **Dashboard load**: 1 read for entire project list (via `users/{uid}/data/projects`)
-- **Project load**: 1 read for complete project metadata (via `icons_meta`)
+- **Project load**: 1 read for complete project data including all metadata and icons
 - **Member management**: No separate user lookups (denormalized in project members)
 - **No expensive queries**: Avoided `array-contains` and complex filtering
-- **Atomic operations**: Single document updates prevent partial state issues
+- **Single document per project**: All icon data and metadata in one document
 
-### Storage Efficiency
-- **Content deduplication**: Identical icon sets share same hash/storage
-- **Immutable pattern**: Enables infinite CDN caching (`max-age=31536000`)
-- **Conditional downloads**: Client cache prevents redundant transfers
-- **Compressed archives**: Reduced bandwidth and storage costs
-- **SVG-only storage**: No server-generated fonts, previews, or other derived assets
+### Blob Storage Efficiency
+- **1MB document limit**: Each archive respects Firestore's document size limit
+- **fflate compression**: High compression ratios for SVG files (typically 70-90% reduction)
+- **Embedded metadata**: All project info in manifest.json within archive
+- **Single read access**: Complete project data in one Firestore read
+- **Client-side decompression**: Fast browser-native decompression
+- **Size validation**: Frontend prevents oversized archives before write attempts
 
 ### Scalability Features
-- **Free tier friendly**: Optimized for Firestore's free tier limits
-- **Large icon sets**: Supports thousands of icons per project (up to 1GB archive limit)
-- **Concurrent access**: Immutable storage prevents write conflicts
-- **Global CDN**: Storage assets cached worldwide for fast access
+- **Free tier friendly**: Optimized for Firestore's free tier limits (no external storage costs)
+- **Medium icon sets**: Supports projects with compressed archives up to 1MB per document
+- **Predictable performance**: Single document reads with consistent latency
+- **No external dependencies**: Pure Firestore solution
 - **Offline-first**: Client can work with cached data when offline
+- **Compression benefits**: fflate typically allows 5-10x more icons within 1MB limit
 
 ### Developer Experience
-- **Single source of truth**: All project data in one Firestore document
+- **Single document per project**: All icon data and metadata in one Firestore document
 - **Type safety**: Clear TypeScript interfaces for all data structures
-- **Predictable costs**: Storage writes only on explicit user saves
+- **Predictable costs**: Only Firestore document writes, no external storage costs
 - **Role-based security**: Fine-grained permissions with minimal complexity
 - **Client-side generation**: Zero server costs for font generation
+- **Simple architecture**: Pure Firestore solution without external dependencies
 
 ## Client-Side Font Generation
 
@@ -286,8 +299,13 @@ service firebase.storage {
 interface CacheStrategy {
   // Cache keys and TTL
   PROJECT_LIST: `foxic_projects_${uid}` // 24 hours
-  PROJECT_DATA: `foxic_project_${projectId}_${hash}` // 7 days
-  SVG_CACHE: `foxic_svgs_${projectId}_${hash}` // 30 days
+  PROJECT_ARCHIVE: `foxic_archive_${projectId}_${hash}` // 7 days (full compressed blob)
+  PROJECT_ICONS: `foxic_icons_${projectId}_${hash}` // 7 days (decompressed SVGs)
+  PROJECT_MANIFEST: `foxic_manifest_${projectId}_${hash}` // 7 days (parsed metadata)
+
+  // Compression workflow
+  compressionLib: 'fflate' // High-performance compression library
+  maxArchiveSize: 1_000_000 // 1MB Firestore document limit enforced by frontend
 
   // Simple cache invalidation
   backgroundRefresh: boolean // Refresh cache in background
@@ -316,4 +334,4 @@ interface FontGeneration {
 }
 ```
 
-This simplified design **eliminates server-side font generation costs** while providing users with **instant, customizable font generation** directly in their browser.
+This simplified design **eliminates both server-side font generation costs and external storage dependencies** while providing users with **instant, customizable font generation** directly in their browser. The single-document architecture with embedded manifest ensures optimal performance with 1MB compressed blob limits.
