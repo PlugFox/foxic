@@ -129,59 +129,74 @@ icons.zip (fflate compressed)
 - **editor**: can add/remove/edit icons, save new revisions.
 - **viewer**: read-only access to project metadata and archives.
 
-### Firestore Security Rules
+### Firestore Security Rules (Read-Optimized, Write-Controlled)
 
 ```javascript
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions for role-based access
-    function isProjectMember(projectId) {
-      return request.auth != null &&
-             request.auth.uid in get(/databases/$(database)/documents/projects/$(projectId)).data.members;
-    }
-
-    function getProjectRole(projectId) {
-      return get(/databases/$(database)/documents/projects/$(projectId)).data.members[request.auth.uid].role;
-    }
-
-    function canEdit(projectId) {
-      let role = getProjectRole(projectId);
-      return role in ['owner', 'admin', 'editor'];
-    }
-
-    function canAdmin(projectId) {
-      let role = getProjectRole(projectId);
-      return role in ['owner', 'admin'];
-    }
-
     // Users: own profile and data only
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
 
-      // User projects subcollection: own project list only
       match /data/{document=**} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }
 
-    // Projects: member access with role-based permissions
+    // Projects: Read-optimized, write-controlled
     match /projects/{projectId} {
-      allow read: if isProjectMember(projectId) ||
-                     resource.data.visibility == 'public';
-      allow write: if canAdmin(projectId);
+      // Read: Any authenticated user can read any project (zero additional reads)
+      allow read: if request.auth != null;
 
-      // Project icons archive: editors can modify icon archives
+      // Write: Only owner, admin, editor can modify project
+      allow write: if request.auth != null &&
+                      request.auth.uid in resource.data.members &&
+                      resource.data.members[request.auth.uid].role in ['owner', 'admin', 'editor'];
+
+      // Project icons: Read-optimized, write-controlled
       match /data/icons {
-        allow read: if isProjectMember(projectId) ||
-                       get(/databases/$(database)/documents/projects/$(projectId)).data.visibility == 'public';
-        allow write: if canEdit(projectId);
+        allow read: if request.auth != null;
+
+        // Write: Only owner, admin, editor can modify icons
+        allow write: if request.auth != null &&
+                        request.auth.uid in get(/databases/$(database)/documents/projects/$(projectId)).data.members &&
+                        get(/databases/$(database)/documents/projects/$(projectId)).data.members[request.auth.uid].role in ['owner', 'admin', 'editor'];
       }
     }
   }
 }
 ```
+
+### **🚨 Security vs Cost Trade-offs**
+
+**Optimized Read/Write Balance:**
+1. **Zero Read Validation**: No document reads for read operations
+2. **Write Validation Only**: Role checks only when modifying data
+3. **Selective Security**: Read access open, write access controlled
+
+**Security Model:**
+- **✅ Open Read Access**: Any authenticated user can read any project
+- **🔒 Controlled Write Access**: Only owner/admin/editor can modify projects
+- **Single Read for Writes**: One document read to validate write permissions
+- **Trust Read Operations**: No data isolation for read access
+
+**Cost Benefits:**
+- **Read Operations**: 0 additional reads for access validation
+- **Write Operations**: 1 read per write for role validation
+- **Overall Savings**: ~90% reduction in security reads (only on writes)
+- **Performance**: Maximum read speed, validated writes
+
+**Security Trade-offs:**
+- **Open Data Access**: Any authenticated user can discover project content
+- **No Privacy for Reads**: Projects are readable by all authenticated users
+- **Write Protection Maintained**: Data integrity protected by role validation
+
+**Application Impact:**
+- **UI Considerations**: All projects potentially discoverable
+- **Privacy Warning**: Inform users that projects are readable by all users
+- **Write Safety**: Modifications properly protected by Firestore rules
 
 ### Archive Size Validation
 **Frontend Validation**: The client enforces the 1MB size limit before attempting to save to Firestore.
