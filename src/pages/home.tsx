@@ -221,14 +221,12 @@ export default function HomePage() {
             <div class="user-info">
               <div class="user-profile">
                 <Show when={user()?.photoURL}>
-                  <Tooltip content={LL.tooltips.userAvatar()} position="bottom">
-                    <img
-                      src={user()?.photoURL!}
-                      alt={`Аватар пользователя ${user()?.displayName || user()?.email}`}
-                      class="user-avatar"
-                      loading="lazy"
-                    />
-                  </Tooltip>
+                  <img
+                    src={user()?.photoURL!}
+                    alt={`Аватар пользователя ${user()?.displayName || user()?.email}`}
+                    class="user-avatar"
+                    loading="lazy"
+                  />
                 </Show>
                 <span class="user-name" aria-label={`Текущий пользователь: ${user()?.displayName || user()?.email}`}>
                   {user()?.displayName || user()?.email}

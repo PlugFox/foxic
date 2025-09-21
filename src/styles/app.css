@@ -2734,7 +2734,7 @@ body {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-lg);
-    z-index: 1000;
+    z-index: 10001;
     overflow: hidden;
 }
 
@@ -3537,13 +3537,14 @@ body {
 }
 
 .settings-back-btn {
-    min-width: 48px;
+    width: 48px;
     height: 48px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--text-light);
+    padding: 0;
 }
 
 .settings-header h1 {

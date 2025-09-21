@@ -17,8 +17,14 @@ export default function LanguageSelector() {
   const [isOpen, setIsOpen] = createSignal(false)
 
   const handleLanguageChange = async (newLocale: Locales) => {
-    await changeLocale(newLocale)
-    setIsOpen(false)
+    try {
+      console.log('🌐 Language selector: Changing locale to', newLocale)
+      await changeLocale(newLocale)
+      setIsOpen(false)
+      console.log('🌐 Language selector: Locale changed successfully')
+    } catch (error) {
+      console.error('🌐 Language selector: Failed to change locale:', error)
+    }
   }
 
   const getLanguageName = (loc: Locales): string => {
