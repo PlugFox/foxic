@@ -64,9 +64,9 @@ export default function ProjectPage() {
 
           {project() && (
             <div class="project-title-section">
-              <h1>{project()!.name}</h1>
-              {project()!.description && (
-                <p class="project-description">{project()!.description}</p>
+              <h1>{project()?.name}</h1>
+              {project()?.description && (
+                <p class="project-description">{project()?.description || ''}</p>
               )}
             </div>
           )}
@@ -111,7 +111,7 @@ export default function ProjectPage() {
 
               <div class="project-info">
                 <div class="project-info-item">
-                  <strong>Владелец:</strong> {project()!.members[project()!.owner]?.name}
+                  <strong>Владелец:</strong> {project()?.owner || 'Неизвестно'}
                 </div>
                 <div class="project-info-item">
                   <strong>Ваша роль:</strong> {(() => {
@@ -125,13 +125,13 @@ export default function ProjectPage() {
                 </div>
                 <div class="project-info-item">
                   <strong>Видимость:</strong> {(() => {
-                    const visibility = project()!.visibility;
+                    const visibility = project()?.visibility || 'private';
                     return visibility === 'private' ? 'Приватный' :
                            visibility === 'link' ? 'По ссылке' : 'Публичный';
                   })()}
                 </div>
                 <div class="project-info-item">
-                  <strong>Участников:</strong> {Object.keys(project()!.members).length}
+                  <strong>Участников:</strong> {Object.keys(project()?.members || {}).length}
                 </div>
               </div>
             </div>
