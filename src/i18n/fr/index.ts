@@ -19,7 +19,7 @@ const fr = {
   },
   projects: {
     title: 'Mes Projets',
-    count: '{count} {count|projet|projets}',
+    count: '{count} projets' as any,
     empty: {
       title: 'Vous n\'avez pas encore de projets',
       description: 'Créez votre premier projet pour travailler avec des icônes',
@@ -121,6 +121,47 @@ const fr = {
     menuExpanded: 'Menu étendu',
     menuCollapsed: 'Menu réduit',
   },
+  tooltips: {
+    // User actions
+    userAvatar: 'Profil utilisateur',
+    signOut: 'Se déconnecter du compte',
+
+    // Project actions
+    createProject: 'Créer un nouveau projet',
+    openProject: 'Ouvrir le projet',
+    pinProject: 'Épingler le projet',
+    unpinProject: 'Désépingler le projet',
+    deleteProject: 'Supprimer le projet',
+    leaveProject: 'Quitter le projet',
+    projectMenu: 'Menu du projet',
+
+    // Icon actions
+    uploadIcons: 'Télécharger de nouvelles icônes',
+    deleteIcon: 'Supprimer l\'icône',
+    editIcon: 'Modifier l\'icône',
+    downloadIcon: 'Télécharger l\'icône',
+    copyIcon: 'Copier l\'icône',
+
+    // Export actions
+    exportProject: 'Exporter le projet',
+    downloadFont: 'Télécharger la police',
+    copyCSS: 'Copier le code CSS',
+
+    // Navigation
+    goHome: 'Aller à la page d\'accueil',
+    goBack: 'Retour',
+    openSettings: 'Ouvrir les paramètres',
+    toggleTheme: 'Changer le thème',
+
+    // Common UI
+    search: 'Rechercher des projets et icônes',
+    filter: 'Filtrer les résultats',
+    sort: 'Trier',
+    close: 'Fermer',
+    help: 'Aide et support',
+    more: 'Plus d\'actions',
+  },
+
   errors: {
     generic: 'Une erreur s\'est produite',
     network: 'Erreur réseau',

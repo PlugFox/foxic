@@ -26,7 +26,7 @@ const en = {
   // Projects
   projects: {
     title: 'My Projects',
-    count: '{count:number} {count|project|projects}',
+    count: '{count} projects',
     empty: {
       title: 'You don\'t have any projects yet',
       description: 'Create your first project to work with icons',
@@ -129,6 +129,48 @@ const en = {
     serviceWorker: 'Service Worker',
     online: 'Online',
     cache: 'Cache',
+  },
+
+  // Tooltips
+  tooltips: {
+    // User actions
+    userAvatar: 'User profile',
+    signOut: 'Sign out from account',
+
+    // Project actions
+    createProject: 'Create new project',
+    openProject: 'Open project',
+    pinProject: 'Pin project',
+    unpinProject: 'Unpin project',
+    deleteProject: 'Delete project',
+    leaveProject: 'Leave project',
+    projectMenu: 'Project menu',
+
+    // Icon actions
+    uploadIcons: 'Upload new icons',
+    deleteIcon: 'Delete icon',
+    editIcon: 'Edit icon',
+    downloadIcon: 'Download icon',
+    copyIcon: 'Copy icon',
+
+    // Export actions
+    exportProject: 'Export project',
+    downloadFont: 'Download font',
+    copyCSS: 'Copy CSS code',
+
+    // Navigation
+    goHome: 'Go to home page',
+    goBack: 'Go back',
+    openSettings: 'Open settings',
+    toggleTheme: 'Toggle theme',
+
+    // Common UI
+    search: 'Search projects and icons',
+    filter: 'Filter results',
+    sort: 'Sort',
+    close: 'Close',
+    help: 'Help and support',
+    more: 'More actions',
   },
 
   // Accessibility

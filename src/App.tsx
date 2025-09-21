@@ -1,4 +1,5 @@
 import { Route, Router } from '@solidjs/router';
+import AlphaRibbon from './components/AlphaRibbon';
 import AppErrorBoundary from './components/ErrorBoundary';
 import ToastContainer from './components/ToastContainer';
 import { CatchAllRoute, ProtectedRoute, PublicRoute } from './components/routes';
@@ -7,9 +8,12 @@ import { I18nProvider } from './contexts/i18n.context';
 import HomePage from './pages/home';
 import LoginPage from './pages/login';
 import ProjectPage from './pages/project';
+import { analyticsService } from './services/analytics.service';
 import './styles/app.css';
 
 function App() {
+  // Track app initialization
+  analyticsService.trackAppInitialized();
   return (
     <AppErrorBoundary>
       <I18nProvider>
@@ -44,6 +48,7 @@ function App() {
         </AuthProvider>
       </I18nProvider>
       <ToastContainer />
+      <AlphaRibbon />
     </AppErrorBoundary>
   );
 }

@@ -8,13 +8,16 @@ import { LoadingSpinner, LoadingState } from '../components/Loading';
 import NewProjectCard from '../components/NewProjectCard';
 import NewProjectDialog from '../components/NewProjectDialog';
 import ProjectCard from '../components/ProjectCard';
+import Tooltip from '../components/Tooltip';
 import { useAuth } from '../contexts/auth.context';
+import { useTranslation } from '../contexts/i18n.context';
 import { analyticsService } from '../services/analytics.service';
 import { CreateProjectData, ProjectInfo, projectsService } from '../services/projects.service';
 import { toastService } from '../services/toast.service';
 
 export default function HomePage() {
   const { user, signOut } = useAuth();
+  const LL = useTranslation();
   const navigate = useNavigate();
 
   const [projects, setProjects] = createSignal<Record<string, ProjectInfo>>({});
@@ -203,18 +206,32 @@ export default function HomePage() {
           <nav class="user-menu" role="navigation" aria-label="Меню пользователя">
             <div class="user-info">
               <LanguageSelector />
-              <span class="user-name" aria-label={`Текущий пользователь: ${user()?.displayName || user()?.email}`}>
-                {user()?.displayName || user()?.email}
-              </span>
-              <HapticButton
-                onClick={handleSignOut}
-                class="btn btn-secondary"
-                haptic="medium"
-                aria-label="Выйти из аккаунта"
-              >
-                <LogoutIcon size={18} aria-hidden="true" />
-                Выйти
-              </HapticButton>
+              <div class="user-profile">
+                <Show when={user()?.photoURL}>
+                  <Tooltip content={LL.tooltips.userAvatar()} position="bottom">
+                    <img
+                      src={user()?.photoURL!}
+                      alt={`Аватар пользователя ${user()?.displayName || user()?.email}`}
+                      class="user-avatar"
+                      loading="lazy"
+                    />
+                  </Tooltip>
+                </Show>
+                <span class="user-name" aria-label={`Текущий пользователь: ${user()?.displayName || user()?.email}`}>
+                  {user()?.displayName || user()?.email}
+                </span>
+              </div>
+              <Tooltip content={LL.tooltips.signOut()} position="bottom">
+                <HapticButton
+                  onClick={handleSignOut}
+                  class="btn btn-secondary"
+                  haptic="medium"
+                  aria-label="Выйти из аккаунта"
+                >
+                  <LogoutIcon size={18} aria-hidden="true" />
+                  Выйти
+                </HapticButton>
+              </Tooltip>
             </div>
           </nav>
         </div>

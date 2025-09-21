@@ -19,7 +19,7 @@ const de = {
   },
   projects: {
     title: 'Meine Projekte',
-    count: '{count} {count|Projekt|Projekte}',
+    count: '{count} Projekte' as any,
     empty: {
       title: 'Sie haben noch keine Projekte',
       description: 'Erstellen Sie Ihr erstes Projekt, um mit Icons zu arbeiten',
@@ -121,6 +121,47 @@ const de = {
     menuExpanded: 'Menü erweitert',
     menuCollapsed: 'Menü eingeklappt',
   },
+  tooltips: {
+    // User actions
+    userAvatar: 'Benutzerprofil',
+    signOut: 'Vom Konto abmelden',
+
+    // Project actions
+    createProject: 'Neues Projekt erstellen',
+    openProject: 'Projekt öffnen',
+    pinProject: 'Projekt anheften',
+    unpinProject: 'Projekt lösen',
+    deleteProject: 'Projekt löschen',
+    leaveProject: 'Projekt verlassen',
+    projectMenu: 'Projektmenü',
+
+    // Icon actions
+    uploadIcons: 'Neue Icons hochladen',
+    deleteIcon: 'Icon löschen',
+    editIcon: 'Icon bearbeiten',
+    downloadIcon: 'Icon herunterladen',
+    copyIcon: 'Icon kopieren',
+
+    // Export actions
+    exportProject: 'Projekt exportieren',
+    downloadFont: 'Schriftart herunterladen',
+    copyCSS: 'CSS-Code kopieren',
+
+    // Navigation
+    goHome: 'Zur Startseite gehen',
+    goBack: 'Zurück gehen',
+    openSettings: 'Einstellungen öffnen',
+    toggleTheme: 'Design wechseln',
+
+    // Common UI
+    search: 'Projekte und Icons durchsuchen',
+    filter: 'Ergebnisse filtern',
+    sort: 'Sortieren',
+    close: 'Schließen',
+    help: 'Hilfe und Support',
+    more: 'Weitere Aktionen',
+  },
+
   errors: {
     generic: 'Ein Fehler ist aufgetreten',
     network: 'Netzwerkfehler',

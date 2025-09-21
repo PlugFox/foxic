@@ -39,8 +39,12 @@ class AuthService {
     const userCredential = await signInWithPopup(auth, this.googleProvider);
     const user = this.mapUser(userCredential.user);
 
-    // Track login event
-    analyticsService.track('login', { method: 'google' });
+    // Track login event with user properties
+    analyticsService.trackUserLogin('google', {
+      uid: user.uid,
+      email: user.email || undefined,
+      displayName: user.displayName || undefined
+    });
 
     return user;
   }
@@ -49,8 +53,8 @@ class AuthService {
   async signOut(): Promise<void> {
     await signOut(auth);
 
-    // Track logout event
-    analyticsService.track('logout', {});
+    // Track logout event and clear user data
+    analyticsService.trackUserLogout();
   }
 
   // Подписка на изменения состояния аутентификации

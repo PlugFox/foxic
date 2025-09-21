@@ -2,6 +2,10 @@ import { logEvent } from 'firebase/analytics';
 import { analytics } from '../config/firebase';
 
 export interface AnalyticsEvents {
+  // Standard Firebase events
+  page_view: { page_location: string; page_title: string };
+  app_initialized: { version: string };
+
   // Auth events
   login: { method: string };
   logout: {};
@@ -77,17 +81,84 @@ class AnalyticsService {
   }
 
   /**
-   * Track page view
+   * Set user ID for analytics tracking
    */
-  trackPageView(pageName: string, additionalParams?: Record<string, any>): void {
+  setUserId(userId: string | null): void {
     if (!this.isEnabled || !analytics) return;
 
-    logEvent(analytics, 'page_view', {
-      page_title: pageName,
-      page_location: window.location.href,
-      ...additionalParams,
+    try {
+      // Firebase Analytics v9 doesn't export setUserId function
+      // We'll track user ID as a custom event
+      if (userId) {
+        logEvent(analytics, 'user_id_set', { user_id: userId });
+      }
+
+      if (import.meta.env.DEV) {
+        console.log('📊 Analytics user ID set:', userId);
+      }
+    } catch (error) {
+      console.error('Analytics setUserId error:', error);
+    }
+  }  /**
+   * Set user properties
+   */
+  setUserProperties(properties: Record<string, string | number | boolean>): void {
+    if (!this.isEnabled || !analytics) return;
+
+    try {
+      // Firebase Analytics v9 modular SDK uses different approach
+      // We'll track user properties as custom events
+      logEvent(analytics, 'user_properties_set', properties);
+
+      if (import.meta.env.DEV) {
+        console.log('📊 Analytics user properties set:', properties);
+      }
+    } catch (error) {
+      console.error('Analytics setUserProperties error:', error);
+    }
+  }  /**
+   * Track page view
+   */
+  trackPageView(path: string, title?: string): void {
+    this.track('page_view', {
+      page_location: window.location.origin + path,
+      page_title: title || document.title
     });
   }
+
+  /**
+   * Track app initialization
+   */
+  trackAppInitialized(): void {
+    this.track('app_initialized', {
+      version: import.meta.env.VITE_APP_VERSION || '1.0.0'
+    });
+  }
+
+  /**
+   * Track user login with user properties
+   */
+  trackUserLogin(method: string, userInfo: { uid: string; email?: string; displayName?: string }): void {
+    this.setUserId(userInfo.uid);
+    this.setUserProperties({
+      login_method: method,
+      has_email: Boolean(userInfo.email),
+      has_display_name: Boolean(userInfo.displayName)
+    });
+
+    this.track('login', { method });
+  }
+
+  /**
+   * Track user logout and clear user data
+   */
+  trackUserLogout(): void {
+    this.track('logout', {});
+    this.setUserId(null);
+    this.setUserProperties({});
+  }
+
+
 
   /**
    * Track performance metrics
@@ -114,16 +185,7 @@ class AnalyticsService {
     });
   }
 
-  /**
-   * Set user properties
-   */
-  setUserProperties(properties: Record<string, string | number>): void {
-    if (!this.isEnabled || !analytics) return;
 
-    // Note: setUserProperties is not available in v9 modular SDK
-    // We'll track it as a custom event instead
-    logEvent(analytics, 'user_properties_set', properties);
-  }
 
   /**
    * Enable/disable analytics

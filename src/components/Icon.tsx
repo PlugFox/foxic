@@ -143,9 +143,6 @@ export const Icon: Component<IconProps> = (props) => {
       <span class="material-icons" style={{ 'font-size': 'inherit' }}>
         {props.name}
       </span>
-      <span class="icon-fallback" style={{ display: 'none' }}>
-        {fallback}
-      </span>
     </span>
   );
 };

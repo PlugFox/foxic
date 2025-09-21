@@ -131,6 +131,48 @@ const ru = {
     cache: 'Кэш',
   },
 
+  // Tooltips
+  tooltips: {
+    // User actions
+    userAvatar: 'Профиль пользователя',
+    signOut: 'Выйти из аккаунта',
+
+    // Project actions
+    createProject: 'Создать новый проект',
+    openProject: 'Открыть проект',
+    pinProject: 'Закрепить проект',
+    unpinProject: 'Открепить проект',
+    deleteProject: 'Удалить проект',
+    leaveProject: 'Покинуть проект',
+    projectMenu: 'Меню проекта',
+
+    // Icon actions
+    uploadIcons: 'Загрузить новые иконки',
+    deleteIcon: 'Удалить иконку',
+    editIcon: 'Редактировать иконку',
+    downloadIcon: 'Скачать иконку',
+    copyIcon: 'Копировать иконку',
+
+    // Export actions
+    exportProject: 'Экспортировать проект',
+    downloadFont: 'Скачать шрифт',
+    copyCSS: 'Копировать CSS код',
+
+    // Navigation
+    goHome: 'Перейти на главную страницу',
+    goBack: 'Вернуться назад',
+    openSettings: 'Открыть настройки',
+    toggleTheme: 'Переключить тему',
+
+    // Common UI
+    search: 'Поиск по проектам и иконкам',
+    filter: 'Фильтр результатов',
+    sort: 'Сортировка',
+    close: 'Закрыть',
+    help: 'Справка и помощь',
+    more: 'Дополнительные действия',
+  },
+
   // Accessibility
   a11y: {
     skipToContent: 'Перейти к содержимому',

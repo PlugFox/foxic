@@ -19,7 +19,7 @@ const es = {
   },
   projects: {
     title: 'Mis Proyectos',
-    count: '{count} {count|proyecto|proyectos}',
+    count: '{count} proyectos' as any,
     empty: {
       title: 'Aún no tienes proyectos',
       description: 'Crea tu primer proyecto para trabajar con iconos',
@@ -108,6 +108,47 @@ const es = {
     serviceWorker: 'Service Worker',
     online: 'En línea',
     cache: 'Caché',
+  },
+
+  tooltips: {
+    // User actions
+    userAvatar: 'Perfil de usuario',
+    signOut: 'Cerrar sesión de la cuenta',
+
+    // Project actions
+    createProject: 'Crear nuevo proyecto',
+    openProject: 'Abrir proyecto',
+    pinProject: 'Fijar proyecto',
+    unpinProject: 'Desfijar proyecto',
+    deleteProject: 'Eliminar proyecto',
+    leaveProject: 'Abandonar proyecto',
+    projectMenu: 'Menú del proyecto',
+
+    // Icon actions
+    uploadIcons: 'Subir nuevos iconos',
+    deleteIcon: 'Eliminar icono',
+    editIcon: 'Editar icono',
+    downloadIcon: 'Descargar icono',
+    copyIcon: 'Copiar icono',
+
+    // Export actions
+    exportProject: 'Exportar proyecto',
+    downloadFont: 'Descargar fuente',
+    copyCSS: 'Copiar código CSS',
+
+    // Navigation
+    goHome: 'Ir a la página de inicio',
+    goBack: 'Volver atrás',
+    openSettings: 'Abrir configuración',
+    toggleTheme: 'Cambiar tema',
+
+    // Common UI
+    search: 'Buscar proyectos e iconos',
+    filter: 'Filtrar resultados',
+    sort: 'Ordenar',
+    close: 'Cerrar',
+    help: 'Ayuda y soporte',
+    more: 'Más acciones',
   },
   a11y: {
     skipToContent: 'Saltar al contenido',
