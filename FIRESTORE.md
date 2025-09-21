@@ -41,7 +41,6 @@ users/{uid}/data/projects
             pinned: boolean     // User can pin favorite projects
         }
     }
-    updatedAt: timestamp
 ```
 
 ### Projects
@@ -66,7 +65,6 @@ projects/{projectId}
     visibility: "private" | "link" | "public"  // public for showcase
     tags: string[]              // project categorization
     createdAt: timestamp
-    updatedAt: timestamp
 ```
 
 ### Project Icons Archive

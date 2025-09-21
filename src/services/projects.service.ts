@@ -1,13 +1,13 @@
 import {
-    collection,
-    doc,
-    FieldValue,
-    getDoc,
-    onSnapshot,
-    serverTimestamp,
-    setDoc,
-    Timestamp,
-    writeBatch
+  collection,
+  doc,
+  FieldValue,
+  getDoc,
+  onSnapshot,
+  serverTimestamp,
+  setDoc,
+  Timestamp,
+  writeBatch
 } from 'firebase/firestore';
 import { firestore } from '../config/firebase';
 
@@ -22,7 +22,6 @@ export interface ProjectInfo {
 
 export interface UserProjectsData {
   projects: Record<string, ProjectInfo>;
-  updatedAt: Timestamp | FieldValue;
 }
 
 export interface ProjectMember {
@@ -44,7 +43,6 @@ export interface Project {
   visibility: 'private' | 'link' | 'public';
   tags: string[];
   createdAt: Timestamp | FieldValue;
-  updatedAt: Timestamp | FieldValue;
 }
 
 export interface CreateProjectData {
@@ -107,8 +105,7 @@ class ProjectsService {
       },
       visibility: projectData.visibility || 'private',
       tags: projectData.tags || [],
-      createdAt: now,
-      updatedAt: now
+      createdAt: now
     };
 
     batch.set(projectRef, project);
@@ -132,8 +129,7 @@ class ProjectsService {
     };
 
     batch.set(userProjectsRef, {
-      projects: userProjects,
-      updatedAt: now
+      projects: userProjects
     });
 
     await batch.commit();
@@ -173,8 +169,7 @@ class ProjectsService {
         delete memberProjects[projectId];
 
         batch.set(memberProjectsRef, {
-          projects: memberProjects,
-          updatedAt: serverTimestamp()
+          projects: memberProjects
         });
       }
     }
@@ -212,8 +207,7 @@ class ProjectsService {
 
     batch.set(projectRef, {
       ...project,
-      members: updatedMembers,
-      updatedAt: serverTimestamp()
+      members: updatedMembers
     });
 
     // Удаляем проект из списка проектов пользователя
@@ -226,8 +220,7 @@ class ProjectsService {
       delete userProjects[projectId];
 
       batch.set(userProjectsRef, {
-        projects: userProjects,
-        updatedAt: serverTimestamp()
+        projects: userProjects
       });
     }
 
@@ -262,8 +255,7 @@ class ProjectsService {
         projects[projectId].lastAccessed = serverTimestamp();
 
         await setDoc(userProjectsRef, {
-          projects,
-          updatedAt: serverTimestamp()
+          projects
         });
       }
     }
@@ -282,8 +274,7 @@ class ProjectsService {
         projects[projectId].pinned = !projects[projectId].pinned;
 
         await setDoc(userProjectsRef, {
-          projects,
-          updatedAt: serverTimestamp()
+          projects
         });
       }
     }
