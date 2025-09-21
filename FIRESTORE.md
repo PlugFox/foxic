@@ -23,8 +23,7 @@ users/{uid}
         exportFormat: "svg" | "font" // Default export preference
     }
     createdAt: timestamp
-    updatedAt: timestamp
-    lastActiveAt: timestamp     // For inactive user cleanup
+    // Removed updatedAt and lastActiveAt to avoid frequent writes
 ```
 
 ### User Projects
@@ -36,9 +35,10 @@ users/{uid}/data/projects
         {projectId}: {
             role: "owner" | "admin" | "editor" | "viewer"
             name: string        // Denormalized project name for quick display
-            lastAccessed: timestamp
             notifications: int  // Count of unread changes
             pinned: boolean     // User can pin favorite projects
+            // Removed lastAccessed to avoid frequent writes
+            // Use client-side tracking or batch updates instead
         }
     }
 ```
@@ -51,15 +51,13 @@ projects/{projectId}
     name: string                // project name
     description: string         // optional description
     owner: string               // UID of the project owner
-    members: {                  // Denormalized member info to avoid user lookups
+    members: {                  // Minimal member info to avoid frequent updates
         {uid}: {
             role: "owner" | "admin" | "editor" | "viewer"
-            email: string       // Denormalized for member management UI
-            name: string        // Denormalized for display
-            avatar?: string     // Denormalized for avatars
             added: timestamp    // when added to project
-            lastActive?: timestamp  // last activity in this project
             invitedBy: string   // UID of who invited this member
+            // Removed email, name, avatar, lastActive to avoid frequent writes
+            // UI can fetch user details from users/{uid} when needed
         }
     }
     visibility: "private" | "link" | "public"  // public for showcase
@@ -204,18 +202,43 @@ interface ArchiveValidation {
 
 **Note**: All icon data and metadata are stored directly in Firestore documents as compressed blobs. No external storage dependencies.
 
+### Additional Cost Optimizations
+
+**Batched Operations**: Group multiple operations to reduce write costs:
+```typescript
+// Instead of individual writes for user activity tracking
+// Use client-side batching with periodic sync
+interface BatchedUpdates {
+  lastAccessed: Record<string, timestamp>; // Batch multiple project accesses
+  syncInterval: 5 * 60 * 1000; // Sync every 5 minutes
+  maxBatchSize: 10; // Max operations per batch
+}
+```
+
+**On-Demand Data Loading**: Fetch user details only when needed:
+```typescript
+// Instead of denormalizing user data in project members
+// Fetch user details on-demand for member management UI
+interface LazyUserDetails {
+  cachedUsers: Map<string, UserProfile>; // Client-side cache
+  fetchOnlyWhenNeeded: boolean; // Don't preload all member details
+}
+```
+
 ---
 
 ## Optimized User Flows
 
 ### Save Project (Client → Firestore)
-**Cost**: 2 Firestore writes per icon set update
+**Cost**: 1 Firestore write per icon set update (optimized)
 1. User modifies icons in client memory
 2. Client validates total archive size will not exceed 1MB limit
 3. Client creates manifest.json with all metadata (rev, hash, count, icon info)
 4. Client compresses archive (SVGs + manifest) using fflate
 5. Update Firestore `projects/{projectId}/data/icons` document atomically with compressed blob
-6. Update `users/{uid}/data/projects` with denormalized project info (total: 2 writes)
+6. **Optimization**: Skip updating `users/{uid}/data/projects` unless project name changed
+   - Icon updates don't affect user's project list
+   - Reduces writes from 2 to 1 per save
 
 ### Load Project (Client)
 **Cost**: 1 Firestore read (archive document contains all data)
@@ -234,11 +257,12 @@ interface ArchiveValidation {
 2. Display all accessible projects with denormalized names
 3. No need for `array-contains` queries or multiple project lookups
 
-### Invite Member (Cost-Optimized)
-**Cost**: 2 Firestore writes
-1. Owner/admin updates `projects/{projectId}.members` with denormalized member info
+### Invite Member (Ultra Cost-Optimized)
+**Cost**: 2 Firestore writes (minimal data)
+1. Owner/admin updates `projects/{projectId}.members` with minimal member info (role, added, invitedBy only)
 2. System updates `users/{invitedUserUid}/data/projects` to add project access
-3. Security rules automatically apply to new member
+3. User details (email, name, avatar) fetched from `users/{uid}` on-demand in UI
+4. Security rules automatically apply to new member
 
 ### Export Fonts (Client-Side)
 **Cost**: 0 server resources - pure client-side operation
@@ -255,9 +279,10 @@ interface ArchiveValidation {
 ### Firestore Read/Write Minimization
 - **Dashboard load**: 1 read for entire project list (via `users/{uid}/data/projects`)
 - **Project load**: 1 read for complete project data including all metadata and icons
-- **Member management**: No separate user lookups (denormalized in project members)
+- **Member management**: Minimal project member data + on-demand user lookups only when needed
 - **No expensive queries**: Avoided `array-contains` and complex filtering
 - **Dedicated archive document**: All icon data and metadata in single archive document
+- **Eliminated frequent updates**: Removed lastAccessed, lastActive, updatedAt from hot paths
 
 ### Blob Storage Efficiency
 - **1MB document limit**: Each archive document respects Firestore's document size limit

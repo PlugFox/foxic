@@ -50,11 +50,6 @@ export default function HomePage() {
   };
 
   const handleOpenProject = (projectId: string) => {
-    // Обновляем время последнего доступа
-    const currentUser = user();
-    if (currentUser) {
-      projectsService.updateLastAccess(currentUser.uid, projectId);
-    }
     navigate(`/project/${projectId}`);
   };
 
@@ -65,11 +60,9 @@ export default function HomePage() {
     try {
       await projectsService.createProject(
         currentUser.uid,
-        currentUser.email || '',
-        currentUser.displayName || currentUser.email || 'Пользователь',
-        currentUser.photoURL,
         projectData
       );
+      // User details (email, name, avatar) will be fetched from users/{uid} when needed
     } catch (error) {
       console.error('Ошибка создания проекта:', error);
       // В реальном приложении здесь можно показать toast-уведомление
@@ -130,10 +123,8 @@ export default function HomePage() {
       if (a.pinned && !b.pinned) return -1;
       if (!a.pinned && b.pinned) return 1;
 
-      // Затем по времени последнего доступа
-      const aTime = (a.lastAccessed as any)?.seconds || 0;
-      const bTime = (b.lastAccessed as any)?.seconds || 0;
-      return bTime - aTime;
+      // Затем по алфавиту (без lastAccessed для экономии записей)
+      return a.name.localeCompare(b.name);
     });
   };
 

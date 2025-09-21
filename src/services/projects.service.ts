@@ -15,7 +15,6 @@ import { firestore } from '../config/firebase';
 export interface ProjectInfo {
   role: 'owner' | 'admin' | 'editor' | 'viewer';
   name: string;
-  lastAccessed: Timestamp | FieldValue;
   notifications: number;
   pinned: boolean;
 }
@@ -26,11 +25,7 @@ export interface UserProjectsData {
 
 export interface ProjectMember {
   role: 'owner' | 'admin' | 'editor' | 'viewer';
-  email: string;
-  name: string;
-  avatar?: string;
   added: Timestamp | FieldValue;
-  lastActive?: Timestamp | FieldValue;
   invitedBy: string;
 }
 
@@ -76,9 +71,6 @@ class ProjectsService {
   // Создание нового проекта
   async createProject(
     userId: string,
-    userEmail: string,
-    userName: string,
-    userAvatar: string | null,
     projectData: CreateProjectData
   ): Promise<string> {
     const batch = writeBatch(firestore);
@@ -95,11 +87,7 @@ class ProjectsService {
       members: {
         [userId]: {
           role: 'owner',
-          email: userEmail,
-          name: userName,
-          avatar: userAvatar || undefined,
           added: now,
-          lastActive: now,
           invitedBy: userId
         }
       },
@@ -123,7 +111,6 @@ class ProjectsService {
     userProjects[projectId] = {
       role: 'owner',
       name: projectData.name,
-      lastAccessed: now,
       notifications: 0,
       pinned: false
     };
@@ -242,25 +229,6 @@ class ProjectsService {
     return null;
   }
 
-  // Обновление времени последнего доступа к проекту
-  async updateLastAccess(userId: string, projectId: string): Promise<void> {
-    const userProjectsRef = doc(firestore, `users/${userId}/data/projects`);
-    const snapshot = await getDoc(userProjectsRef);
-
-    if (snapshot.exists()) {
-      const data = snapshot.data() as UserProjectsData;
-      const projects = { ...data.projects };
-
-      if (projects[projectId]) {
-        projects[projectId].lastAccessed = serverTimestamp();
-
-        await setDoc(userProjectsRef, {
-          projects
-        });
-      }
-    }
-  }
-
   // Переключение закрепления проекта
   async toggleProjectPin(userId: string, projectId: string): Promise<void> {
     const userProjectsRef = doc(firestore, `users/${userId}/data/projects`);
@@ -278,6 +246,39 @@ class ProjectsService {
         });
       }
     }
+  }
+
+  // Helper method to get user details when needed (for member management UI)
+  async getUserDetails(userId: string): Promise<{email: string, name: string, avatar?: string} | null> {
+    const userRef = doc(firestore, `users/${userId}`);
+    const snapshot = await getDoc(userRef);
+
+    if (snapshot.exists()) {
+      const userData = snapshot.data();
+      return {
+        email: userData.email || '',
+        name: userData.name || '',
+        avatar: userData.avatar || undefined
+      };
+    }
+
+    return null;
+  }
+
+  // Helper method to get multiple user details efficiently
+  async getMultipleUserDetails(userIds: string[]): Promise<Record<string, {email: string, name: string, avatar?: string}>> {
+    const userDetails: Record<string, {email: string, name: string, avatar?: string}> = {};
+
+    // Batch read user documents
+    const promises = userIds.map(async (userId) => {
+      const details = await this.getUserDetails(userId);
+      if (details) {
+        userDetails[userId] = details;
+      }
+    });
+
+    await Promise.all(promises);
+    return userDetails;
   }
 }
 
