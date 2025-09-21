@@ -1,4 +1,4 @@
-import { zip } from 'fflate';
+import { FLUTTER_TEMPLATES, FOXIC_NAME, FOXIC_WEBSITE, replaceTemplateVariables } from '../templates/flutter.templates';
 import { IconData } from './icons.service';
 
 // Типы для fonteditor-core
@@ -9,6 +9,9 @@ interface FontEditorCore {
 
 // Ленивый импорт fonteditor-core
 let fontEditorCore: FontEditorCore | null = null;
+
+// Ленивый импорт fflate для ZIP архивов
+let fflate: any = null;
 
 async function loadFontEditorCore(): Promise<FontEditorCore> {
   if (!fontEditorCore) {
@@ -25,6 +28,19 @@ async function loadFontEditorCore(): Promise<FontEditorCore> {
   return fontEditorCore!; // Используем ! так как проверили выше
 }
 
+async function loadFflate(): Promise<any> {
+  if (!fflate) {
+    try {
+      fflate = await import('fflate');
+      console.log('fflate загружен');
+    } catch (error) {
+      console.error('Ошибка загрузки fflate:', error);
+      throw new Error('Не удалось загрузить библиотеку архивирования');
+    }
+  }
+  return fflate;
+}
+
 interface ExportManifest {
   rev: number;
   hash: string;
@@ -34,9 +50,16 @@ interface ExportManifest {
   icons: Record<string, IconMetadata>;
   createdAt: string;
   exportedAt: string;
-  exportType: 'svg-archive' | 'font-package';
+  exportType: 'svg-archive' | 'font-package' | 'flutter-package';
   fontMetadata?: {
     familyName: string;
+    version: string;
+    description: string;
+  };
+  flutterMetadata?: {
+    packageName: string;
+    fontName: string;
+    className: string;
     version: string;
     description: string;
   };
@@ -53,6 +76,22 @@ interface FontOptions {
   version: string;
   description: string;
   startUnicode: number;
+}
+
+interface FlutterPackageOptions {
+  packageName: string;
+  fontName: string;
+  className: string;
+  version: string;
+  description: string;
+  author?: string;
+  homepage?: string;
+  repository?: string;
+  sdkConstraint: string;
+  flutterConstraint: string;
+  startUnicode: number;
+  materialDesign: boolean;
+  workspace: boolean;
 }
 
 export class ExportService {
@@ -99,19 +138,215 @@ export class ExportService {
       }
 
       // Создаем архив
-      return new Promise((resolve, reject) => {
-        zip(filesToZip, { level: 6 }, (err, data) => {
-          if (err) {
-            reject(new Error(`Ошибка создания архива: ${err.message}`));
-          } else {
-            resolve(data);
-          }
-        });
+      return new Promise(async (resolve, reject) => {
+        try {
+          const { zip } = await loadFflate();
+          zip(filesToZip, { level: 6 }, (err: Error | null, data: Uint8Array) => {
+            if (err) {
+              reject(new Error(`Ошибка создания архива: ${err.message}`));
+            } else {
+              resolve(data);
+            }
+          });
+        } catch (error) {
+          reject(error);
+        }
       });
 
     } catch (error) {
       console.error('Ошибка экспорта SVG:', error);
       throw new Error(`Не удалось создать SVG архив: ${error instanceof Error ? error.message : 'неизвестная ошибка'}`);
+    }
+  }
+
+  /**
+   * Нормализует и валидирует опции Flutter пакета
+   */
+  private normalizeFlutterOptions(options: FlutterPackageOptions, projectName: string): FlutterPackageOptions {
+    // Нормализуем packageName: только a-z и _
+    let normalizedPackageName = options.packageName
+      .toLowerCase()
+      .replace(/[^a-z0-9_]/g, '_')
+      .replace(/^(\d)/, '_$1') // Не может начинаться с цифры
+      .replace(/_+/g, '_') // Убираем множественные подчеркивания
+      .replace(/^_|_$/g, ''); // Убираем подчеркивания в начале и конце
+
+    if (!normalizedPackageName) {
+      normalizedPackageName = projectName
+        .toLowerCase()
+        .replace(/[^a-z0-9_]/g, '_')
+        .replace(/^(\d)/, '_$1')
+        .replace(/_+/g, '_')
+        .replace(/^_|_$/g, '') || 'custom_icons';
+    }
+
+    // Нормализуем fontName: только A-Za-z0-9
+    let normalizedFontName = options.fontName.replace(/[^A-Za-z0-9]/g, '');
+    if (!normalizedFontName) {
+      normalizedFontName = projectName.replace(/[^A-Za-z0-9]/g, '') || 'CustomIcons';
+    }
+
+    // Нормализуем className: только A-Za-z0-9, остальное заменяем на $
+    let normalizedClassName = options.className.replace(/[^A-Za-z0-9]/g, '$');
+    if (!normalizedClassName) {
+      normalizedClassName = projectName.replace(/[^A-Za-z0-9]/g, '$') || 'CustomIcons';
+    }
+
+    // Используем версию по умолчанию если пустая
+    const normalizedVersion = options.version.trim() || '0.0.1';
+
+    // Используем SDK constraints по умолчанию если пустые
+    const normalizedSdkConstraint = options.sdkConstraint.trim() || '>=3.7.0 <4.0.0';
+    const normalizedFlutterConstraint = options.flutterConstraint.trim() || '>=3.35.1';
+
+    return {
+      ...options,
+      packageName: normalizedPackageName,
+      fontName: normalizedFontName,
+      className: normalizedClassName,
+      version: normalizedVersion,
+      sdkConstraint: normalizedSdkConstraint,
+      flutterConstraint: normalizedFlutterConstraint,
+      // Убираем пустые опциональные поля
+      description: options.description.trim() || `Flutter пакет иконок ${normalizedFontName}`,
+      author: options.author?.trim() || undefined,
+      homepage: options.homepage?.trim() || undefined,
+      repository: options.repository?.trim() || undefined,
+    };
+  }
+
+  /**
+   * Генерирует полный Flutter пакет с TTF шрифтом и Dart кодом
+   */
+  async generateFlutterPackage(
+    icons: Record<string, IconData>,
+    options: FlutterPackageOptions,
+    projectName: string = 'CustomIcons'
+  ): Promise<Uint8Array> {
+    try {
+      // Нормализуем и валидируем опции
+      const normalizedOptions = this.normalizeFlutterOptions(options, projectName);
+
+      // Проверяем количество иконок
+      const iconCount = Object.keys(icons).length;
+      if (iconCount === 0) {
+        throw new Error('Нет иконок для экспорта');
+      }
+      if (iconCount > 1000) {
+        throw new Error('Слишком много иконок (максимум 1000)');
+      }
+
+      let currentUnicode = normalizedOptions.startUnicode;
+      const iconMap: Record<string, { unicode: number; name: string }> = {};
+
+      // Создаем SVG шрифт из иконок
+      const svgFont = this.createSvgFont(icons, {
+        familyName: normalizedOptions.fontName,
+        version: normalizedOptions.version,
+        description: normalizedOptions.description,
+        startUnicode: normalizedOptions.startUnicode
+      }, currentUnicode, iconMap);
+
+      // Генерируем TTF файл шрифта
+      const fontFiles = await this.generateRealFontFiles(svgFont, normalizedOptions.fontName);
+
+      // Создаем pubspec.yaml
+      const pubspecContent = this.generateFlutterPubspec(normalizedOptions);
+
+      // Создаем Dart код с иконками
+      const dartCode = this.generateFlutterDartCode(normalizedOptions, iconMap);
+
+      // Создаем README для Flutter пакета
+      const readmeContent = this.generateFlutterReadme(normalizedOptions, iconMap);
+
+      // Создаем .gitignore
+      const gitignoreContent = this.generateFlutterGitignore();
+
+      // Создаем CHANGELOG.md
+      const firstIconName = Object.keys(iconMap).length > 0 ? this.sanitizeDartName(Object.values(iconMap)[0].name) : 'home';
+      const changelogContent = this.generateFlutterChangelog(normalizedOptions, iconCount).replace('iconName', firstIconName);
+
+      // Создаем манифест экспорта
+      const iconsMetadata: Record<string, IconMetadata> = {};
+      for (const [name, icon] of Object.entries(icons)) {
+        iconsMetadata[name] = {
+          name,
+          size: icon.content.length,
+          hash: icon.hash
+        };
+      }
+
+      const manifest: ExportManifest = {
+        rev: 1,
+        hash: this.calculateArchiveHash(icons),
+        count: Object.keys(icons).length,
+        totalSize: Object.values(icons).reduce((sum, icon) => sum + icon.content.length, 0),
+        compression: 0.8,
+        icons: iconsMetadata,
+        createdAt: new Date().toISOString(),
+        exportedAt: new Date().toISOString(),
+        exportType: 'flutter-package',
+        flutterMetadata: {
+          packageName: normalizedOptions.packageName,
+          fontName: normalizedOptions.fontName,
+          className: normalizedOptions.className,
+          version: normalizedOptions.version,
+          description: normalizedOptions.description
+        }
+      };
+
+      // Упаковываем все в архив
+      const filesToZip: Record<string, Uint8Array> = {
+        'manifest.json': new TextEncoder().encode(JSON.stringify(manifest, null, 2)),
+        'pubspec.yaml': new TextEncoder().encode(pubspecContent),
+        [`lib/${normalizedOptions.packageName}.dart`]: new TextEncoder().encode(dartCode),
+        'README.md': new TextEncoder().encode(readmeContent),
+        '.gitignore': new TextEncoder().encode(gitignoreContent),
+        'CHANGELOG.md': new TextEncoder().encode(changelogContent)
+      };
+
+      // Добавляем workspace файлы если включена опция
+      if (normalizedOptions.workspace) {
+        filesToZip['analysis_options.yaml'] = new TextEncoder().encode(this.generateFlutterAnalysisOptions());
+
+        const licenseContent = this.generateFlutterLicense(normalizedOptions);
+        if (licenseContent) {
+          filesToZip['LICENSE'] = new TextEncoder().encode(licenseContent);
+        }
+      }
+
+      // Добавляем TTF файл шрифта
+      if (fontFiles[`${normalizedOptions.fontName}.ttf`]) {
+        filesToZip[`fonts/${normalizedOptions.fontName}.ttf`] = fontFiles[`${normalizedOptions.fontName}.ttf`];
+      }
+
+      return new Promise(async (resolve, reject) => {
+        try {
+          console.log('Создаем Flutter пакет архив...');
+
+          // Загружаем fflate для создания ZIP
+          const { zip } = await loadFflate();
+
+          // Создаем ZIP архив
+          zip(filesToZip, (err: Error | null, data: Uint8Array) => {
+            if (err) {
+              console.error('Ошибка создания ZIP:', err);
+              reject(new Error(`Ошибка создания архива: ${err.message}`));
+              return;
+            }
+
+            console.log(`✅ Flutter пакет создан: ${data.length} байт`);
+            resolve(data);
+          });
+        } catch (error) {
+          console.error('Ошибка создания архива:', error);
+          reject(error);
+        }
+      });
+
+    } catch (error) {
+      console.error('Ошибка генерации Flutter пакета:', error);
+      throw new Error(`Не удалось создать Flutter пакет: ${error instanceof Error ? error.message : 'неизвестная ошибка'}`);
     }
   }
 
@@ -190,14 +425,19 @@ export class ExportService {
         filesToZip[filename] = content;
       });
 
-      return new Promise((resolve, reject) => {
-        zip(filesToZip, { level: 6 }, (err, data) => {
-          if (err) {
-            reject(new Error(`Ошибка сжатия: ${err.message}`));
-          } else {
-            resolve(data);
-          }
-        });
+      return new Promise(async (resolve, reject) => {
+        try {
+          const { zip } = await loadFflate();
+          zip(filesToZip, { level: 6 }, (err: Error | null, data: Uint8Array) => {
+            if (err) {
+              reject(new Error(`Ошибка сжатия: ${err.message}`));
+            } else {
+              resolve(data);
+            }
+          });
+        } catch (error) {
+          reject(error);
+        }
       });
 
     } catch (error) {
@@ -1026,7 +1266,340 @@ ${error instanceof Error ? error.message : String(error)}
         [`${familyName}_INSTRUCTIONS.txt`]: errorBytes
       };
     }
-  }  /**
+  }
+
+  /**
+   * Генерирует pubspec.yaml для Flutter пакета
+   */
+  private generateFlutterPubspec(options: FlutterPackageOptions): string {
+    return replaceTemplateVariables(FLUTTER_TEMPLATES.pubspec, {
+      packageName: options.packageName,
+      description: options.description,
+      version: options.version,
+      homepage: options.homepage || '',
+      repository: options.repository || '',
+      sdkConstraint: options.sdkConstraint,
+      flutterConstraint: options.flutterConstraint,
+      fontName: options.fontName
+    });
+  }
+
+  /**
+   * Генерирует Dart код с иконками для Flutter
+   */
+  private generateFlutterDartCode(options: FlutterPackageOptions, iconMap: Record<string, { unicode: number; name: string }>): string {
+    const iconCount = Object.keys(iconMap).length;
+    const firstIconName = this.sanitizeDartName(Object.keys(iconMap)[0] || 'home');
+    const minUnicode = Math.min(...Object.values(iconMap).map(i => i.unicode)).toString(16).toUpperCase().padStart(4, '0');
+    const maxUnicode = Math.max(...Object.values(iconMap).map(i => i.unicode)).toString(16).toUpperCase().padStart(4, '0');
+
+    // Генерируем все иконки используя шаблон
+    const iconEntries = Object.entries(iconMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([name, info]) => {
+        const dartName = this.sanitizeDartName(name);
+        const unicodeHex = '0x' + info.unicode.toString(16).toLowerCase();
+        const unicodeDisplay = 'U+' + info.unicode.toString(16).toUpperCase().padStart(4, '0');
+
+        return replaceTemplateVariables(FLUTTER_TEMPLATES.iconEntry, {
+          iconName: name,
+          dartName: dartName,
+          unicodeHex: unicodeHex,
+          unicodeDisplay: unicodeDisplay,
+          className: options.className
+        });
+      }).join('');
+
+    // Используем главный шаблон для Dart кода
+    return replaceTemplateVariables(FLUTTER_TEMPLATES.dartCode, {
+      packageName: options.packageName,
+      fontName: options.fontName,
+      className: options.className,
+      version: options.version,
+      description: options.description,
+      iconCount: iconCount,
+      firstIconName: firstIconName,
+      minUnicode: minUnicode,
+      maxUnicode: maxUnicode,
+      iconEntries: iconEntries,
+      foxicName: FOXIC_NAME,
+      foxicWebsite: FOXIC_WEBSITE
+    });
+  }
+
+  /**
+   * Генерирует README.md для Flutter пакета
+   */
+  private generateFlutterReadme(options: FlutterPackageOptions, iconMap: Record<string, { unicode: number; name: string }>): string {
+    const iconCount = Object.keys(iconMap).length;
+    const firstIconName = this.sanitizeDartName(Object.values(iconMap)[0]?.name || 'home');
+    const minUnicode = Math.min(...Object.values(iconMap).map(i => i.unicode)).toString(16).toUpperCase().padStart(4, '0');
+    const maxUnicode = Math.max(...Object.values(iconMap).map(i => i.unicode)).toString(16).toUpperCase().padStart(4, '0');
+
+    // Создаем таблицу иконок - показываем все иконки
+    const iconTableHeader = '| Icon | Name | Unicode | Dart Code |\n|------|------|---------|-----------|';
+    const iconTableRows = Object.entries(iconMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([name, info]) => {
+        const dartName = this.sanitizeDartName(info.name);
+        const unicodeHex = 'U+' + info.unicode.toString(16).toUpperCase().padStart(4, '0');
+        return '| ' + info.name + ' | `' + dartName + '` | ' + unicodeHex + ' | `' + options.className + '.' + dartName + '` |';
+      }).join('\n');
+
+    const iconTable = iconTableHeader + '\n' + iconTableRows;
+    const moreIconsNote = ''; // Убираем "...and X more icons"
+
+    // Создаем секцию автора если указан
+    const authorSection = options.author ? replaceTemplateVariables(FLUTTER_TEMPLATES.authorSection, {
+      author: options.author
+    }) : '';
+
+    // Используем шаблон README
+    return replaceTemplateVariables(FLUTTER_TEMPLATES.readme, {
+      packageName: options.packageName,
+      fontName: options.fontName,
+      className: options.className,
+      version: options.version,
+      description: options.description,
+      iconCount: iconCount,
+      firstIconName: firstIconName,
+      minUnicode: minUnicode,
+      maxUnicode: maxUnicode,
+      iconTable: iconTable,
+      moreIconsNote: moreIconsNote,
+      authorSection: authorSection,
+      sdkConstraint: options.sdkConstraint,
+      flutterConstraint: options.flutterConstraint,
+      foxicName: FOXIC_NAME,
+      foxicWebsite: FOXIC_WEBSITE
+    });
+  }
+
+  /**
+   * Генерирует .gitignore для Flutter пакета
+   */
+  private generateFlutterGitignore(): string {
+    return FLUTTER_TEMPLATES.gitignore;
+  }
+
+  /**
+   * Генерирует analysis_options.yaml для Flutter пакета
+   */
+  private generateFlutterAnalysisOptions(): string {
+    return FLUTTER_TEMPLATES.analysisOptions;
+  }
+
+  /**
+   * Генерирует CHANGELOG.md для Flutter пакета
+   */
+  private generateFlutterChangelog(options: FlutterPackageOptions, iconCount: number): string {
+    const firstIconName = this.sanitizeDartName(Object.keys(options)[0] || 'home'); // Будет заменено правильно в вызове
+
+    return replaceTemplateVariables(FLUTTER_TEMPLATES.changelog, {
+      version: options.version,
+      iconCount: iconCount,
+      foxicName: FOXIC_NAME,
+      foxicWebsite: FOXIC_WEBSITE,
+      flutterConstraint: options.flutterConstraint,
+      sdkConstraint: options.sdkConstraint,
+      packageName: options.packageName,
+      className: options.className,
+      firstIconName: 'iconName' // Заглушка, будет заменена в вызове
+    });
+  }
+
+  /**
+   * Генерирует LICENSE файл для Flutter пакета
+   */
+  private generateFlutterLicense(options: FlutterPackageOptions): string {
+    if (!options.author) {
+      return '';
+    }
+
+    return replaceTemplateVariables(FLUTTER_TEMPLATES.license, {
+      year: new Date().getFullYear().toString(),
+      author: options.author
+    });
+  }
+
+
+
+  /**
+   * Генерирует файлы примера для Flutter пакета
+   */
+  private generateFlutterExample(options: FlutterPackageOptions, iconMap: Record<string, { unicode: number; name: string }>): Record<string, string> {
+    const packageName = options.packageName.replace(/[^a-z0-9_]/g, '_').toLowerCase();
+    const className = options.className || 'CustomIcons';
+
+    const examplePubspec = `name: ${packageName}_example
+description: Example app for ${packageName} package
+version: 1.0.0+1
+publish_to: none
+
+environment:
+  sdk: "${options.sdkConstraint}"
+  flutter: "${options.flutterConstraint}"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ${packageName}:
+    path: ../
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+`;
+
+    // Генерируем список иконок для демо
+    const demoIconsList = Object.entries(iconMap)
+      .slice(0, 6)
+      .map(([name]) => `${className}.${this.sanitizeDartName(name)}`)
+      .join(', ');
+
+    const exampleMain = `import 'package:flutter/material.dart';
+import 'package:${packageName}/${packageName}.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: '${options.packageName} Demo',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+      ),
+      home: const MyHomePage(title: '${options.packageName} Icons'),
+    );
+  }
+}
+
+class MyHomePage extends StatelessWidget {
+  const MyHomePage({super.key, required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    // Get first few icons for demo
+    final demoIcons = [${demoIconsList}];
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text(title),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Available Icons (${Object.keys(iconMap).length} total):',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 20),
+            Expanded(
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                ),
+                itemCount: demoIcons.length,
+                itemBuilder: (context, index) {
+                  return Card(
+                    child: Center(
+                      child: Icon(
+                        demoIcons[index],
+                        size: 48,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Usage Example:',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'Icon(${className}.${this.sanitizeDartName(Object.keys(iconMap)[0] || 'home')})',
+                style: const TextStyle(fontFamily: 'monospace'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}`;
+
+    return {
+      'example/pubspec.yaml': examplePubspec,
+      'example/lib/main.dart': exampleMain,
+      'example/README.md': `# ${packageName} Example\n\nA simple example app demonstrating the use of ${packageName} icons.\n\n## Getting Started\n\n\`\`\`bash\nflutter pub get\nflutter run\n\`\`\``
+    };
+  }
+
+  /**
+   * Санитизирует имя для использования в Dart коде
+   */
+  private sanitizeDartName(name: string): string {
+    // Заменяем недопустимые символы на подчеркивания
+    let dartName = name
+      .replace(/[^a-zA-Z0-9_]/g, '_')
+      .replace(/^(\d)/, '_$1') // Имя не может начинаться с цифры
+      .replace(/_+/g, '_') // Убираем множественные подчеркивания
+      .replace(/^_|_$/g, ''); // Убираем подчеркивания в начале и конце
+
+    // Если имя пустое или является зарезервированным словом
+    if (!dartName || this.isDartReservedWord(dartName)) {
+      dartName = `icon_${dartName || 'default'}`;
+    }
+
+    return dartName;
+  }
+
+  /**
+   * Проверяет, является ли слово зарезервированным в Dart
+   */
+  private isDartReservedWord(word: string): boolean {
+    const reservedWords = [
+      'abstract', 'else', 'import', 'show', 'as', 'enum', 'in', 'static',
+      'assert', 'export', 'interface', 'super', 'async', 'extends', 'is',
+      'switch', 'await', 'extension', 'late', 'sync', 'break', 'external',
+      'library', 'this', 'case', 'factory', 'mixin', 'throw', 'catch',
+      'false', 'new', 'true', 'class', 'final', 'null', 'try', 'const',
+      'finally', 'on', 'typedef', 'continue', 'for', 'operator', 'var',
+      'covariant', 'Function', 'part', 'void', 'default', 'get', 'required',
+      'while', 'deferred', 'hide', 'rethrow', 'with', 'do', 'if', 'return',
+      'yield'
+    ];
+
+    return reservedWords.includes(word.toLowerCase());
+  }
+
+  /**
    * Вычисляет хеш архива для проверки целостности
    */
   private calculateArchiveHash(icons: Record<string, IconData>): string {

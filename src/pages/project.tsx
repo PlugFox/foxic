@@ -329,6 +329,7 @@ export default function ProjectPage() {
             <ExportButtons
               icons={icons()}
               projectName={project()?.name || 'Проект'}
+              projectId={params.projectId}
               disabled={isSaving()}
             />
           </div>
