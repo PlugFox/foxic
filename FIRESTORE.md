@@ -152,8 +152,11 @@ service cloud.firestore {
 
       // Write: Only owner, admin, editor can modify project
       allow write: if request.auth != null &&
-                      request.auth.uid in resource.data.members &&
                       resource.data.members[request.auth.uid].role in ['owner', 'admin', 'editor'];
+
+      // Delete: Only owner can delete project
+      allow delete: if request.auth != null &&
+                        resource.data.owner == request.auth.uid;
 
       // Project icons: Read-optimized, write-controlled
       match /data/icons {
@@ -161,7 +164,6 @@ service cloud.firestore {
 
         // Write: Only owner, admin, editor can modify icons
         allow write: if request.auth != null &&
-                        request.auth.uid in get(/databases/$(database)/documents/projects/$(projectId)).data.members &&
                         get(/databases/$(database)/documents/projects/$(projectId)).data.members[request.auth.uid].role in ['owner', 'admin', 'editor'];
       }
     }
