@@ -23,6 +23,7 @@
   "license": "MIT",
   "devDependencies": {
     "@fullhuman/postcss-purgecss": "^7.0.2",
+    "@types/crypto-js": "^4.2.2",
     "@types/node": "^24.5.2",
     "@types/sharp": "^0.31.1",
     "autoprefixer": "^10.4.21",
@@ -38,7 +39,10 @@
   },
   "dependencies": {
     "@solidjs/router": "^0.15.3",
+    "crypto-js": "^4.2.0",
+    "fflate": "^0.8.2",
     "firebase": "^12.3.0",
+    "fonteditor-core": "^2.6.3",
     "solid-js": "^1.9.5"
   }
 }

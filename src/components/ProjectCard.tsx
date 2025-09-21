@@ -46,26 +46,6 @@ export default function ProjectCard(props: ProjectCardProps) {
     props.onOpen(props.projectId);
   };
 
-  // Форматирование даты последнего доступа
-  const formatLastAccessed = () => {
-    if (!props.project.lastAccessed || typeof props.project.lastAccessed === 'object' && 'seconds' in props.project.lastAccessed) {
-      const timestamp = props.project.lastAccessed as any;
-      if (timestamp?.seconds) {
-        const date = new Date(timestamp.seconds * 1000);
-        const now = new Date();
-        const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-
-        if (diffDays === 0) return 'Сегодня';
-        if (diffDays === 1) return 'Вчера';
-        if (diffDays < 7) return `${diffDays} дн. назад`;
-        if (diffDays < 30) return `${Math.floor(diffDays / 7)} нед. назад`;
-        if (diffDays < 365) return `${Math.floor(diffDays / 30)} мес. назад`;
-        return `${Math.floor(diffDays / 365)} г. назад`;
-      }
-    }
-    return 'Недавно';
-  };
-
   return (
     <div
       class="project-card"
@@ -146,9 +126,6 @@ export default function ProjectCard(props: ProjectCardProps) {
         </div>
 
         <div class="project-card-footer">
-          <span class="project-card-last-accessed">
-            {formatLastAccessed()}
-          </span>
           <Show when={props.project.notifications > 0}>
             <span class="project-card-notifications">
               {props.project.notifications}
