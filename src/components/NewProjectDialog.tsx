@@ -3,6 +3,7 @@ import { CreateProjectData } from '../services/projects.service';
 
 interface NewProjectDialogProps {
   isOpen: boolean;
+  loading?: boolean;
   onClose: () => void;
   onConfirm: (projectData: CreateProjectData) => Promise<void>;
 }
@@ -13,6 +14,8 @@ export default function NewProjectDialog(props: NewProjectDialogProps) {
   const [visibility, setVisibility] = createSignal<'private' | 'link' | 'public'>('private');
   const [isLoading, setIsLoading] = createSignal(false);
   const [error, setError] = createSignal('');
+
+  const isActuallyLoading = () => props.loading || isLoading();
 
   const handleSubmit = async (e: Event) => {
     e.preventDefault();
@@ -46,12 +49,17 @@ export default function NewProjectDialog(props: NewProjectDialogProps) {
     }
   };
 
+  const resetForm = () => {
+    setName('');
+    setDescription('');
+    setVisibility('private');
+    setError('');
+    setIsLoading(false);
+  };
+
   const handleClose = () => {
-    if (!isLoading()) {
-      setName('');
-      setDescription('');
-      setVisibility('private');
-      setError('');
+    if (!isActuallyLoading()) {
+      resetForm();
       props.onClose();
     }
   };
@@ -65,7 +73,7 @@ export default function NewProjectDialog(props: NewProjectDialogProps) {
             <button
               class="dialog-close-btn"
               onClick={handleClose}
-              disabled={isLoading()}
+              disabled={isActuallyLoading()}
             >
               ×
             </button>
@@ -83,7 +91,7 @@ export default function NewProjectDialog(props: NewProjectDialogProps) {
                 value={name()}
                 onInput={(e) => setName(e.currentTarget.value)}
                 placeholder="Введите название проекта"
-                disabled={isLoading()}
+                disabled={isActuallyLoading()}
                 maxLength={100}
                 required
               />
@@ -99,7 +107,7 @@ export default function NewProjectDialog(props: NewProjectDialogProps) {
                 value={description()}
                 onInput={(e) => setDescription(e.currentTarget.value)}
                 placeholder="Краткое описание проекта"
-                disabled={isLoading()}
+                disabled={isActuallyLoading()}
                 maxLength={500}
                 rows={3}
               />
@@ -114,7 +122,7 @@ export default function NewProjectDialog(props: NewProjectDialogProps) {
                 class="form-select"
                 value={visibility()}
                 onChange={(e) => setVisibility(e.currentTarget.value as any)}
-                disabled={isLoading()}
+                disabled={isActuallyLoading()}
               >
                 <option value="private">Приватный - только участники</option>
                 <option value="link">По ссылке - доступ по прямой ссылке</option>
@@ -133,16 +141,16 @@ export default function NewProjectDialog(props: NewProjectDialogProps) {
                 type="button"
                 class="btn btn-secondary"
                 onClick={handleClose}
-                disabled={isLoading()}
+                disabled={isActuallyLoading()}
               >
                 Отмена
               </button>
               <button
                 type="submit"
                 class="btn btn-primary"
-                disabled={isLoading() || !name().trim()}
+                disabled={isActuallyLoading() || !name().trim()}
               >
-                {isLoading() ? 'Создание...' : 'Создать проект'}
+                {isActuallyLoading() ? 'Создание...' : 'Создать проект'}
               </button>
             </div>
           </form>

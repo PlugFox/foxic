@@ -38,11 +38,15 @@
     "vite-plugin-solid": "^2.11.8"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.2",
     "@solidjs/router": "^0.15.3",
     "crypto-js": "^4.2.0",
     "fflate": "^0.8.2",
     "firebase": "^12.3.0",
     "fonteditor-core": "^2.6.3",
-    "solid-js": "^1.9.5"
+    "solid-js": "^1.9.5",
+    "typesafe-i18n": "^5.26.2"
   }
 }

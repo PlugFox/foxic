@@ -1,11 +1,17 @@
 import { useNavigate } from '@solidjs/router';
 import { createEffect, createSignal, For, onCleanup, Show } from 'solid-js';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { HapticButton } from '../components/HapticComponents';
+import { AddIcon, AnalyticsIcon, LogoutIcon } from '../components/Icon';
+import LanguageSelector from '../components/LanguageSelector';
+import { LoadingSpinner, LoadingState } from '../components/Loading';
 import NewProjectCard from '../components/NewProjectCard';
 import NewProjectDialog from '../components/NewProjectDialog';
 import ProjectCard from '../components/ProjectCard';
 import { useAuth } from '../contexts/auth.context';
+import { analyticsService } from '../services/analytics.service';
 import { CreateProjectData, ProjectInfo, projectsService } from '../services/projects.service';
+import { toastService } from '../services/toast.service';
 
 export default function HomePage() {
   const { user, signOut } = useAuth();
@@ -13,9 +19,32 @@ export default function HomePage() {
 
   const [projects, setProjects] = createSignal<Record<string, ProjectInfo>>({});
   const [isLoading, setIsLoading] = createSignal(true);
+  const [error, setError] = createSignal<string | null>(null);
   const [showNewProjectDialog, setShowNewProjectDialog] = createSignal(false);
   const [showActionDialog, setShowActionDialog] = createSignal(false);
   const [projectAction, setProjectAction] = createSignal<{id: string, name: string, isOwner: boolean} | null>(null);
+
+  const retryLoadProjects = () => {
+    const currentUser = user();
+    if (currentUser) {
+      setError(null);
+      setIsLoading(true);
+      try {
+        if (unsubscribe) unsubscribe();
+        unsubscribe = projectsService.subscribeToUserProjects(
+          currentUser.uid,
+          (userProjects) => {
+            setProjects(userProjects);
+            setIsLoading(false);
+          }
+        );
+      } catch (err) {
+        console.error('Error loading projects:', err);
+        setError('Не удалось загрузить проекты');
+        setIsLoading(false);
+      }
+    }
+  };
 
   let unsubscribe: (() => void) | null = null;
 
@@ -24,13 +53,20 @@ export default function HomePage() {
     const currentUser = user();
     if (currentUser) {
       setIsLoading(true);
-      unsubscribe = projectsService.subscribeToUserProjects(
-        currentUser.uid,
-        (userProjects) => {
-          setProjects(userProjects);
-          setIsLoading(false);
-        }
-      );
+      setError(null);
+      try {
+        unsubscribe = projectsService.subscribeToUserProjects(
+          currentUser.uid,
+          (userProjects) => {
+            setProjects(userProjects);
+            setIsLoading(false);
+          }
+        );
+      } catch (err) {
+        console.error('Error loading projects:', err);
+        setError('Не удалось загрузить проекты');
+        setIsLoading(false);
+      }
     }
   });
 
@@ -50,23 +86,40 @@ export default function HomePage() {
   };
 
   const handleOpenProject = (projectId: string) => {
+    analyticsService.track('project_opened', { project_id: projectId });
     navigate(`/project/${projectId}`);
   };
+
+  const [isCreatingProject, setIsCreatingProject] = createSignal(false);
 
   const handleCreateProject = async (projectData: CreateProjectData) => {
     const currentUser = user();
     if (!currentUser) return;
 
+    setIsCreatingProject(true);
     try {
       await projectsService.createProject(
         currentUser.uid,
         projectData
       );
       // User details (email, name, avatar) will be fetched from users/{uid} when needed
+      analyticsService.track('project_created', {
+        project_id: projectData.name // используем name как ID для аналитики
+      });
+
+      toastService.success(
+        'Проект создан',
+        `Проект "${projectData.name}" успешно создан`
+      );
     } catch (error) {
       console.error('Ошибка создания проекта:', error);
-      // В реальном приложении здесь можно показать toast-уведомление
+      toastService.error(
+        'Ошибка создания проекта',
+        'Не удалось создать проект. Попробуйте еще раз.'
+      );
       throw error; // Пробрасываем ошибку в диалог для обработки
+    } finally {
+      setIsCreatingProject(false);
     }
   };
 
@@ -143,55 +196,83 @@ export default function HomePage() {
   };
 
   return (
-    <div class="home-container">
-      <header class="app-header">
+    <div class="home-container" role="application" aria-label="Foxic - Генератор шрифтов иконок">
+      <header class="app-header" role="banner">
         <div class="header-content">
-          <h1>Foxic</h1>
-          <div class="user-menu">
+          <h1 id="app-title">Foxic</h1>
+          <nav class="user-menu" role="navigation" aria-label="Меню пользователя">
             <div class="user-info">
-              <span class="user-name">{user()?.displayName || user()?.email}</span>
-              <button onClick={handleSignOut} class="btn btn-secondary">
+              <LanguageSelector />
+              <span class="user-name" aria-label={`Текущий пользователь: ${user()?.displayName || user()?.email}`}>
+                {user()?.displayName || user()?.email}
+              </span>
+              <HapticButton
+                onClick={handleSignOut}
+                class="btn btn-secondary"
+                haptic="medium"
+                aria-label="Выйти из аккаунта"
+              >
+                <LogoutIcon size={18} aria-hidden="true" />
                 Выйти
-              </button>
+              </HapticButton>
             </div>
-          </div>
+          </nav>
         </div>
       </header>
 
-      <main class="main-content">
-        <div class="projects-container">
-          <div class="projects-header">
-            <h2>Мои проекты</h2>
+      <main class="main-content" role="main" aria-labelledby="app-title">
+        <section class="projects-container" aria-labelledby="projects-heading">
+          <header class="projects-header">
+            <h2 id="projects-heading">Мои проекты</h2>
             <Show when={!isLoading() && Object.keys(projects()).length > 0}>
-              <span class="projects-count">
+              <span class="projects-count" role="status" aria-live="polite">
                 {Object.keys(projects()).length} {Object.keys(projects()).length === 1 ? 'проект' : 'проектов'}
               </span>
             </Show>
-          </div>
+          </header>
 
           <Show when={isLoading()}>
-            <div class="projects-loading">
-              <div class="loading-spinner"></div>
+            <div class="projects-loading" role="status" aria-live="polite" aria-label="Загрузка проектов">
+              <LoadingSpinner size={32} />
               <p>Загрузка проектов...</p>
             </div>
           </Show>
 
+          <Show when={error()}>
+            <LoadingState
+              loading={false}
+              error={error()}
+              onRetry={retryLoadProjects}
+              retryLabel="Попробовать снова"
+            >
+              <></>
+            </LoadingState>
+          </Show>
+
           <Show when={!isLoading() && Object.keys(projects()).length === 0}>
-            <div class="projects-empty">
-              <div class="empty-icon">�</div>
-              <h3>У вас пока нет проектов</h3>
+            <div class="projects-empty" role="region" aria-labelledby="empty-heading">
+              <div class="empty-icon" aria-hidden="true">📁</div>
+              <h3 id="empty-heading">У вас пока нет проектов</h3>
               <p>Создайте свой первый проект для работы с иконками</p>
-              <button
+              <HapticButton
                 class="btn btn-primary btn-large"
                 onClick={() => setShowNewProjectDialog(true)}
+                haptic="medium"
+                aria-describedby="empty-heading"
               >
+                <AddIcon size={20} aria-hidden="true" />
                 Создать первый проект
-              </button>
+              </HapticButton>
             </div>
           </Show>
 
           <Show when={!isLoading() && Object.keys(projects()).length > 0}>
-            <div class="projects-grid">
+            <div
+              class="projects-grid"
+              role="grid"
+              aria-label="Сетка проектов"
+              aria-rowcount={Math.ceil((Object.keys(projects()).length + 1) / 3)}
+            >
               <For each={sortedProjects()}>
                 {([projectId, project]) => (
                   <ProjectCard
@@ -207,17 +288,25 @@ export default function HomePage() {
               <NewProjectCard onCreate={() => setShowNewProjectDialog(true)} />
             </div>
           </Show>
-        </div>
+        </section>
       </main>
 
-      <footer class="app-footer">
-        <button onClick={handlePWAInfo} class="pwa-info-btn" title="Информация о PWA">
-          📱 PWA
-        </button>
+      <footer class="app-footer" role="contentinfo">
+        <HapticButton
+          onClick={handlePWAInfo}
+          class="pwa-info-btn"
+          title="Информация о PWA"
+          haptic="light"
+          aria-label="Показать информацию о Progressive Web App"
+        >
+          <AnalyticsIcon size={16} aria-hidden="true" />
+          PWA
+        </HapticButton>
       </footer>
 
       <NewProjectDialog
         isOpen={showNewProjectDialog()}
+        loading={isCreatingProject()}
         onClose={() => setShowNewProjectDialog(false)}
         onConfirm={handleCreateProject}
       />

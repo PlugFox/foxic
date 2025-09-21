@@ -1,11 +1,12 @@
 import {
-  GoogleAuthProvider,
-  User,
-  onAuthStateChanged,
-  signInWithPopup,
-  signOut
+    GoogleAuthProvider,
+    User,
+    onAuthStateChanged,
+    signInWithPopup,
+    signOut
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
+import { analyticsService } from './analytics.service';
 
 export interface AuthUser {
   uid: string;
@@ -36,12 +37,20 @@ class AuthService {
   // Вход с Google
   async signInWithGoogle(): Promise<AuthUser> {
     const userCredential = await signInWithPopup(auth, this.googleProvider);
-    return this.mapUser(userCredential.user);
+    const user = this.mapUser(userCredential.user);
+
+    // Track login event
+    analyticsService.track('login', { method: 'google' });
+
+    return user;
   }
 
   // Выход
   async signOut(): Promise<void> {
     await signOut(auth);
+
+    // Track logout event
+    analyticsService.track('logout', {});
   }
 
   // Подписка на изменения состояния аутентификации

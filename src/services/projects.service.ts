@@ -1,15 +1,16 @@
 import {
-  collection,
-  doc,
-  FieldValue,
-  getDoc,
-  onSnapshot,
-  serverTimestamp,
-  setDoc,
-  Timestamp,
-  writeBatch
+    collection,
+    doc,
+    FieldValue,
+    getDoc,
+    onSnapshot,
+    serverTimestamp,
+    setDoc,
+    Timestamp,
+    writeBatch
 } from 'firebase/firestore';
 import { firestore } from '../config/firebase';
+import { analyticsService } from './analytics.service';
 
 // Типы данных согласно FIRESTORE.md
 export interface ProjectInfo {
@@ -120,6 +121,10 @@ class ProjectsService {
     });
 
     await batch.commit();
+
+    // Track project creation
+    analyticsService.track('project_created', { project_id: projectId });
+
     return projectId;
   }
 
@@ -162,6 +167,9 @@ class ProjectsService {
     }
 
     await batch.commit();
+
+    // Track project deletion
+    analyticsService.track('project_deleted', { project_id: projectId });
   }
 
   // Покинуть проект (для не-владельцев)
@@ -243,6 +251,12 @@ class ProjectsService {
 
         await setDoc(userProjectsRef, {
           projects
+        });
+
+        // Track project pin toggle
+        analyticsService.track('project_pinned', {
+          project_id: projectId,
+          pinned: projects[projectId].pinned
         });
       }
     }
