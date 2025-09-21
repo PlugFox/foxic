@@ -8,6 +8,7 @@ import { I18nProvider } from './contexts/i18n.context';
 import HomePage from './pages/home';
 import LoginPage from './pages/login';
 import ProjectPage from './pages/project';
+import SettingsPage from './pages/settings';
 import { analyticsService } from './services/analytics.service';
 import './styles/app.css';
 
@@ -40,6 +41,14 @@ function App() {
               component={() => (
                 <ProtectedRoute>
                   <ProjectPage />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/settings"
+              component={() => (
+                <ProtectedRoute>
+                  <SettingsPage />
                 </ProtectedRoute>
               )}
             />

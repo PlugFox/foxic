@@ -1,9 +1,8 @@
 import { useNavigate } from '@solidjs/router';
-import { createEffect, createSignal, For, onCleanup, Show } from 'solid-js';
+import { createEffect, createSignal, For, onCleanup, onMount, Show } from 'solid-js';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { HapticButton } from '../components/HapticComponents';
-import { AddIcon, AnalyticsIcon, LogoutIcon } from '../components/Icon';
-import LanguageSelector from '../components/LanguageSelector';
+import { AddIcon, AnalyticsIcon, SettingsIcon } from '../components/Icon';
 import { LoadingSpinner, LoadingState } from '../components/Loading';
 import NewProjectCard from '../components/NewProjectCard';
 import NewProjectDialog from '../components/NewProjectDialog';
@@ -16,7 +15,7 @@ import { CreateProjectData, ProjectInfo, projectsService } from '../services/pro
 import { toastService } from '../services/toast.service';
 
 export default function HomePage() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const LL = useTranslation();
   const navigate = useNavigate();
 
@@ -80,13 +79,28 @@ export default function HomePage() {
     }
   });
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      console.error('Ошибка выхода:', error);
-    }
-  };
+  // Эффект прокрутки для AppBar
+  onMount(() => {
+    const handleScroll = () => {
+      const scrolled = window.scrollY > 10;
+      const header = document.querySelector('.app-header');
+      if (header) {
+        if (scrolled) {
+          header.classList.add('app-header--scrolled');
+        } else {
+          header.classList.remove('app-header--scrolled');
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    onCleanup(() => {
+      window.removeEventListener('scroll', handleScroll);
+    });
+  });
+
+
 
   const handleOpenProject = (projectId: string) => {
     analyticsService.track('project_opened', { project_id: projectId });
@@ -205,7 +219,6 @@ export default function HomePage() {
           <h1 id="app-title">Foxic</h1>
           <nav class="user-menu" role="navigation" aria-label="Меню пользователя">
             <div class="user-info">
-              <LanguageSelector />
               <div class="user-profile">
                 <Show when={user()?.photoURL}>
                   <Tooltip content={LL.tooltips.userAvatar()} position="bottom">
@@ -221,15 +234,14 @@ export default function HomePage() {
                   {user()?.displayName || user()?.email}
                 </span>
               </div>
-              <Tooltip content={LL.tooltips.signOut()} position="bottom">
+              <Tooltip content="Настройки" position="bottom">
                 <HapticButton
-                  onClick={handleSignOut}
-                  class="btn btn-secondary"
-                  haptic="medium"
-                  aria-label="Выйти из аккаунта"
+                  onClick={() => navigate('/settings')}
+                  class="btn btn-ghost"
+                  haptic="light"
+                  aria-label="Открыть настройки"
                 >
-                  <LogoutIcon size={18} aria-hidden="true" />
-                  Выйти
+                  <SettingsIcon size={20} aria-hidden="true" />
                 </HapticButton>
               </Tooltip>
             </div>
