@@ -4,34 +4,21 @@ import { useI18n } from '../contexts/i18n.context'
 import type { Locales } from '../i18n/i18n-types'
 import { LanguageIcon } from './Icon'
 
-const LANGUAGE_NAMES: Record<Locales, string> = {
-  en: 'English',
-  es: 'Español',
-  fr: 'Français',
-  de: 'Deutsch',
-  pt: 'Português',
-  ru: 'Русский',
-}
-
 export default function LanguageSelector() {
-  const { locale, changeLocale, availableLocales } = useI18n()
+  const { locale, changeLocale, availableLocales, getLanguageName } = useI18n()
   const [isOpen, setIsOpen] = createSignal(false)
   const [triggerRef, setTriggerRef] = createSignal<HTMLButtonElement>()
   const [dropdownRef, setDropdownRef] = createSignal<HTMLDivElement>()
 
-  const handleLanguageChange = async (newLocale: Locales) => {
-    try {
-      console.log('🌐 Language selector: Changing locale to', newLocale)
-      await changeLocale(newLocale)
+  const handleLanguageChange = (newLocale: Locales) => {
+    console.log('🌐 Language selector: Changing locale to', newLocale)
+    const success = changeLocale(newLocale)
+    if (success) {
       setIsOpen(false)
       console.log('🌐 Language selector: Locale changed successfully')
-    } catch (error) {
-      console.error('🌐 Language selector: Failed to change locale:', error)
+    } else {
+      console.error('🌐 Language selector: Failed to change locale')
     }
-  }
-
-  const getLanguageName = (loc: Locales): string => {
-    return LANGUAGE_NAMES[loc] || loc.toUpperCase()
   }
 
   const getCurrentLanguageName = () => getLanguageName(locale())
@@ -40,23 +27,35 @@ export default function LanguageSelector() {
     const trigger = triggerRef()
     const dropdown = dropdownRef()
 
-    if (!trigger || !dropdown) return
+    if (!trigger || !dropdown) {
+      // Don't warn if dropdown is simply not open yet
+      return
+    }
 
     const triggerRect = trigger.getBoundingClientRect()
     const dropdownRect = dropdown.getBoundingClientRect()
 
+    console.log('LanguageSelector: Updating position', {
+      triggerRect,
+      dropdownRect,
+      scrollY: window.scrollY,
+      scrollX: window.scrollX
+    })
+
     // Position dropdown below trigger
-    let top = triggerRect.bottom + window.scrollY + 4
-    let left = triggerRect.right + window.scrollX - dropdownRect.width
+    let top = triggerRect.bottom + 4
+    let left = triggerRect.right - dropdownRect.width
 
     // Keep dropdown within viewport
     if (left < 8) {
-      left = triggerRect.left + window.scrollX
+      left = triggerRect.left
     }
 
-    if (top + dropdownRect.height > window.innerHeight + window.scrollY - 8) {
-      top = triggerRect.top + window.scrollY - dropdownRect.height - 4
+    if (top + dropdownRect.height > window.innerHeight - 8) {
+      top = triggerRect.top - dropdownRect.height - 4
     }
+
+    console.log('LanguageSelector: Setting position', { top, left })
 
     dropdown.style.top = `${top}px`
     dropdown.style.left = `${left}px`
@@ -91,10 +90,13 @@ export default function LanguageSelector() {
         ref={setTriggerRef}
         class="language-selector-trigger"
         onClick={() => {
-          setIsOpen(!isOpen())
-          if (!isOpen()) {
+          const newState = !isOpen()
+          setIsOpen(newState)
+          if (newState) {
             // Schedule position update after render
-            setTimeout(updateDropdownPosition, 0)
+            requestAnimationFrame(() => {
+              updateDropdownPosition()
+            })
           }
         }}
         aria-label={`Language: ${getCurrentLanguageName()}`}
@@ -111,11 +113,17 @@ export default function LanguageSelector() {
       <Show when={isOpen()}>
         <Portal>
           <div
-            ref={setDropdownRef}
+            ref={(el) => {
+              setDropdownRef(el)
+              if (el) {
+                // Обновляем позицию сразу после установки ref
+                requestAnimationFrame(() => updateDropdownPosition())
+              }
+            }}
             class="language-selector-dropdown language-selector-dropdown--portal"
             role="menu"
             aria-label="Select Language"
-            style={{ position: 'absolute', top: '0px', left: '0px' }}
+            style={{ position: 'fixed', top: '0px', left: '0px' }}
           >
             <For each={availableLocales}>
               {(loc) => (

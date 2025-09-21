@@ -71,10 +71,10 @@ type RootTranslation = {
 		 */
 		title: string
 		/**
-		 * {​c​o​u​n​t​}​ ​{​c​o​u​n​t​|​p​r​o​j​e​c​t​|​p​r​o​j​e​c​t​s​}
-		 * @param {number} count
+		 * {​c​o​u​n​t​}​ ​p​r​o​j​e​c​t​s
+		 * @param {unknown} count
 		 */
-		count: RequiredParams<'count' | 'count|project|projects'>
+		count: RequiredParams<'count'>
 		empty: {
 			/**
 			 * Y​o​u​ ​d​o​n​'​t​ ​h​a​v​e​ ​a​n​y​ ​p​r​o​j​e​c​t​s​ ​y​e​t
@@ -94,9 +94,30 @@ type RootTranslation = {
 		 */
 		loading: string
 		/**
+		 * F​a​i​l​e​d​ ​t​o​ ​l​o​a​d​ ​p​r​o​j​e​c​t​s
+		 */
+		loadError: string
+		/**
 		 * C​r​e​a​t​e​ ​p​r​o​j​e​c​t
 		 */
 		create: string
+		/**
+		 * P​r​o​j​e​c​t​ ​c​r​e​a​t​e​d
+		 */
+		created: string
+		/**
+		 * P​r​o​j​e​c​t​ ​"​{​n​a​m​e​}​"​ ​c​r​e​a​t​e​d​ ​s​u​c​c​e​s​s​f​u​l​l​y
+		 * @param {string} name
+		 */
+		createdMessage: RequiredParams<'name'>
+		/**
+		 * E​r​r​o​r​ ​c​r​e​a​t​i​n​g​ ​p​r​o​j​e​c​t
+		 */
+		createError: string
+		/**
+		 * F​a​i​l​e​d​ ​t​o​ ​c​r​e​a​t​e​ ​p​r​o​j​e​c​t​.​ ​P​l​e​a​s​e​ ​t​r​y​ ​a​g​a​i​n​.
+		 */
+		createErrorMessage: string
 		/**
 		 * O​p​e​n​ ​p​r​o​j​e​c​t
 		 */
@@ -281,6 +302,70 @@ type RootTranslation = {
 		 */
 		ru: string
 	}
+	settings: {
+		/**
+		 * S​e​t​t​i​n​g​s
+		 */
+		title: string
+		appearance: {
+			/**
+			 * A​p​p​e​a​r​a​n​c​e
+			 */
+			title: string
+			language: {
+				/**
+				 * I​n​t​e​r​f​a​c​e​ ​L​a​n​g​u​a​g​e
+				 */
+				title: string
+				/**
+				 * C​h​o​o​s​e​ ​t​h​e​ ​l​a​n​g​u​a​g​e​ ​f​o​r​ ​d​i​s​p​l​a​y​i​n​g​ ​t​h​e​ ​a​p​p​l​i​c​a​t​i​o​n​ ​i​n​t​e​r​f​a​c​e
+				 */
+				description: string
+			}
+		}
+		account: {
+			/**
+			 * A​c​c​o​u​n​t
+			 */
+			title: string
+			/**
+			 * U​s​e​r
+			 */
+			user: string
+			signOut: {
+				/**
+				 * S​i​g​n​ ​o​u​t​ ​f​r​o​m​ ​a​c​c​o​u​n​t
+				 */
+				title: string
+				/**
+				 * E​n​d​ ​c​u​r​r​e​n​t​ ​s​e​s​s​i​o​n​ ​a​n​d​ ​r​e​t​u​r​n​ ​t​o​ ​l​o​g​i​n​ ​s​c​r​e​e​n
+				 */
+				description: string
+				/**
+				 * S​i​g​n​ ​o​u​t
+				 */
+				button: string
+			}
+		}
+		about: {
+			/**
+			 * A​b​o​u​t
+			 */
+			title: string
+			/**
+			 * F​o​x​i​c
+			 */
+			appName: string
+			/**
+			 * I​c​o​n​ ​f​o​n​t​ ​g​e​n​e​r​a​t​o​r​ ​f​o​r​ ​y​o​u​r​ ​p​r​o​j​e​c​t​s
+			 */
+			appDescription: string
+			/**
+			 * V​e​r​s​i​o​n
+			 */
+			version: string
+		}
+	}
 	common: {
 		/**
 		 * L​o​a​d​i​n​g​.​.​.
@@ -338,6 +423,47 @@ type RootTranslation = {
 		 * M​o​r​e
 		 */
 		more: string
+		/**
+		 * T​r​y​ ​a​g​a​i​n
+		 */
+		retry: string
+	}
+	home: {
+		/**
+		 * F​o​x​i​c
+		 */
+		appTitle: string
+		/**
+		 * I​c​o​n​ ​f​o​n​t​ ​g​e​n​e​r​a​t​o​r
+		 */
+		appDescription: string
+		/**
+		 * M​y​ ​P​r​o​j​e​c​t​s
+		 */
+		myProjects: string
+		/**
+		 * {​c​o​u​n​t​}​ ​p​r​o​j​e​c​t
+		 * @param {number} count
+		 */
+		projectsCount: RequiredParams<'count'>
+		/**
+		 * {​c​o​u​n​t​}​ ​p​r​o​j​e​c​t​s
+		 * @param {number} count
+		 */
+		projectsCountMany: RequiredParams<'count'>
+		/**
+		 * U​s​e​r​ ​m​e​n​u
+		 */
+		userMenu: string
+		/**
+		 * C​u​r​r​e​n​t​ ​u​s​e​r​:​ ​{​u​s​e​r​}
+		 * @param {string} user
+		 */
+		currentUser: RequiredParams<'user'>
+		/**
+		 * O​p​e​n​ ​s​e​t​t​i​n​g​s
+		 */
+		openSettings: string
 	}
 	pwa: {
 		/**
@@ -364,6 +490,10 @@ type RootTranslation = {
 		 * C​a​c​h​e
 		 */
 		cache: string
+		/**
+		 * P​W​A​ ​S​t​a​t​u​s​:
+		 */
+		statusAlert: string
 	}
 	tooltips: {
 		/**
@@ -518,6 +648,16 @@ type RootTranslation = {
 		 */
 		menuCollapsed: string
 	}
+	footer: {
+		/**
+		 * M​a​d​e​ ​b​y
+		 */
+		madeBy: string
+		/**
+		 * V​e​r​s​i​o​n
+		 */
+		version: string
+	}
 	errors: {
 		/**
 		 * A​n​ ​e​r​r​o​r​ ​o​c​c​u​r​r​e​d
@@ -603,9 +743,9 @@ export type TranslationFunctions = {
 		 */
 		title: () => LocalizedString
 		/**
-		 * {count} {count|project|projects}
+		 * {count} projects
 		 */
-		count: (arg: { count: number }) => LocalizedString
+		count: (arg: { count: unknown }) => LocalizedString
 		empty: {
 			/**
 			 * You don't have any projects yet
@@ -625,9 +765,29 @@ export type TranslationFunctions = {
 		 */
 		loading: () => LocalizedString
 		/**
+		 * Failed to load projects
+		 */
+		loadError: () => LocalizedString
+		/**
 		 * Create project
 		 */
 		create: () => LocalizedString
+		/**
+		 * Project created
+		 */
+		created: () => LocalizedString
+		/**
+		 * Project "{name}" created successfully
+		 */
+		createdMessage: (arg: { name: string }) => LocalizedString
+		/**
+		 * Error creating project
+		 */
+		createError: () => LocalizedString
+		/**
+		 * Failed to create project. Please try again.
+		 */
+		createErrorMessage: () => LocalizedString
 		/**
 		 * Open project
 		 */
@@ -809,6 +969,70 @@ export type TranslationFunctions = {
 		 */
 		ru: () => LocalizedString
 	}
+	settings: {
+		/**
+		 * Settings
+		 */
+		title: () => LocalizedString
+		appearance: {
+			/**
+			 * Appearance
+			 */
+			title: () => LocalizedString
+			language: {
+				/**
+				 * Interface Language
+				 */
+				title: () => LocalizedString
+				/**
+				 * Choose the language for displaying the application interface
+				 */
+				description: () => LocalizedString
+			}
+		}
+		account: {
+			/**
+			 * Account
+			 */
+			title: () => LocalizedString
+			/**
+			 * User
+			 */
+			user: () => LocalizedString
+			signOut: {
+				/**
+				 * Sign out from account
+				 */
+				title: () => LocalizedString
+				/**
+				 * End current session and return to login screen
+				 */
+				description: () => LocalizedString
+				/**
+				 * Sign out
+				 */
+				button: () => LocalizedString
+			}
+		}
+		about: {
+			/**
+			 * About
+			 */
+			title: () => LocalizedString
+			/**
+			 * Foxic
+			 */
+			appName: () => LocalizedString
+			/**
+			 * Icon font generator for your projects
+			 */
+			appDescription: () => LocalizedString
+			/**
+			 * Version
+			 */
+			version: () => LocalizedString
+		}
+	}
 	common: {
 		/**
 		 * Loading...
@@ -866,6 +1090,44 @@ export type TranslationFunctions = {
 		 * More
 		 */
 		more: () => LocalizedString
+		/**
+		 * Try again
+		 */
+		retry: () => LocalizedString
+	}
+	home: {
+		/**
+		 * Foxic
+		 */
+		appTitle: () => LocalizedString
+		/**
+		 * Icon font generator
+		 */
+		appDescription: () => LocalizedString
+		/**
+		 * My Projects
+		 */
+		myProjects: () => LocalizedString
+		/**
+		 * {count} project
+		 */
+		projectsCount: (arg: { count: number }) => LocalizedString
+		/**
+		 * {count} projects
+		 */
+		projectsCountMany: (arg: { count: number }) => LocalizedString
+		/**
+		 * User menu
+		 */
+		userMenu: () => LocalizedString
+		/**
+		 * Current user: {user}
+		 */
+		currentUser: (arg: { user: string }) => LocalizedString
+		/**
+		 * Open settings
+		 */
+		openSettings: () => LocalizedString
 	}
 	pwa: {
 		/**
@@ -892,6 +1154,10 @@ export type TranslationFunctions = {
 		 * Cache
 		 */
 		cache: () => LocalizedString
+		/**
+		 * PWA Status:
+		 */
+		statusAlert: () => LocalizedString
 	}
 	tooltips: {
 		/**
@@ -1045,6 +1311,16 @@ export type TranslationFunctions = {
 		 */
 		menuCollapsed: () => LocalizedString
 	}
+	footer: {
+		/**
+		 * Made by
+		 */
+		madeBy: () => LocalizedString
+		/**
+		 * Version
+		 */
+		version: () => LocalizedString
+	}
 	errors: {
 		/**
 		 * An error occurred
@@ -1077,7 +1353,4 @@ export type TranslationFunctions = {
 	}
 }
 
-export type Formatters = {
-	project: (value: number) => unknown
-	projects: (value: number) => unknown
-}
+export type Formatters = {}

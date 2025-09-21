@@ -1,4 +1,4 @@
-import type { Translation } from '../i18n-types'
+import type { BaseTranslation } from '../i18n-types'
 
 const es = {
   app: {
@@ -85,6 +85,32 @@ const es = {
     pt: 'Portugués',
     ru: 'Ruso',
   },
+  settings: {
+    title: 'Configuración',
+    appearance: {
+      title: 'Apariencia',
+      language: {
+        title: 'Idioma de la interfaz',
+        description: 'Elige el idioma para mostrar la interfaz de la aplicación'
+      }
+    },
+    account: {
+      title: 'Cuenta',
+      user: 'Usuario',
+      signOut: {
+        title: 'Cerrar sesión de la cuenta',
+        description: 'Finalizar la sesión actual y volver a la pantalla de inicio de sesión',
+        button: 'Cerrar sesión'
+      }
+    },
+    about: {
+      title: 'Acerca de',
+      appName: 'Foxic',
+      appDescription: 'Generador de fuentes de iconos para tus proyectos',
+      version: 'Versión'
+    }
+  },
+
   common: {
     loading: 'Cargando...',
     error: 'Error',
@@ -100,6 +126,18 @@ const es = {
     settings: 'Configuración',
     help: 'Ayuda',
     more: 'Más',
+    retry: 'Intentar de nuevo',
+  },
+
+  home: {
+    appTitle: 'Foxic',
+    appDescription: 'Generador de fuentes de iconos',
+    myProjects: 'Mis Proyectos',
+    projectsCount: '{count} proyecto',
+    projectsCountMany: '{count} proyectos',
+    userMenu: 'Menú de usuario',
+    currentUser: 'Usuario actual: {user}',
+    openSettings: 'Abrir configuración',
   },
   pwa: {
     info: 'Mostrar información de Progressive Web App',
@@ -108,6 +146,7 @@ const es = {
     serviceWorker: 'Service Worker',
     online: 'En línea',
     cache: 'Caché',
+    statusAlert: 'Estado PWA:',
   },
 
   tooltips: {
@@ -162,6 +201,11 @@ const es = {
     menuExpanded: 'Menú expandido',
     menuCollapsed: 'Menú contraído',
   },
+  footer: {
+    madeBy: 'Creado por',
+    version: 'Versión',
+  },
+
   errors: {
     generic: 'Ocurrió un error',
     network: 'Error de red',
@@ -171,6 +215,6 @@ const es = {
     insufficientPermissions: 'Permisos insuficientes',
     onlyOwnerCanDelete: 'Solo el propietario puede eliminar el proyecto',
   },
-} satisfies Translation
+} satisfies BaseTranslation
 
 export default es

@@ -1,4 +1,4 @@
-import type { BaseTranslation } from 'typesafe-i18n'
+import type { BaseTranslation } from '../i18n-types'
 
 const en = {
   // App
@@ -33,7 +33,12 @@ const en = {
       createFirst: 'Create first project',
     },
     loading: 'Loading projects...',
+    loadError: 'Failed to load projects',
     create: 'Create project',
+    created: 'Project created',
+    createdMessage: 'Project "{name:string}" created successfully',
+    createError: 'Error creating project',
+    createErrorMessage: 'Failed to create project. Please try again.',
     open: 'Open project',
     pin: 'Pin',
     unpin: 'Unpin',
@@ -146,6 +151,19 @@ const en = {
     settings: 'Settings',
     help: 'Help',
     more: 'More',
+    retry: 'Try again',
+  },
+
+  // Home page
+  home: {
+    appTitle: 'Foxic',
+    appDescription: 'Icon font generator',
+    myProjects: 'My Projects',
+    projectsCount: '{count:number} project',
+    projectsCountMany: '{count:number} projects',
+    userMenu: 'User menu',
+    currentUser: 'Current user: {user:string}',
+    openSettings: 'Open settings',
   },
 
   // PWA
@@ -156,6 +174,7 @@ const en = {
     serviceWorker: 'Service Worker',
     online: 'Online',
     cache: 'Cache',
+    statusAlert: 'PWA Status:',
   },
 
   // Tooltips
@@ -212,6 +231,12 @@ const en = {
     emptyProjects: 'No projects available',
     menuExpanded: 'Menu expanded',
     menuCollapsed: 'Menu collapsed',
+  },
+
+  // Footer
+  footer: {
+    madeBy: 'Made by',
+    version: 'Version',
   },
 
   // Errors

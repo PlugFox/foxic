@@ -1,4 +1,4 @@
-import type { Translation } from '../i18n-types'
+import type { BaseTranslation } from '../i18n-types'
 
 const pt = {
   app: {
@@ -85,6 +85,32 @@ const pt = {
     pt: 'Português',
     ru: 'Russo',
   },
+  settings: {
+    title: 'Configurações',
+    appearance: {
+      title: 'Aparência',
+      language: {
+        title: 'Idioma da interface',
+        description: 'Escolha o idioma para exibir a interface da aplicação'
+      }
+    },
+    account: {
+      title: 'Conta',
+      user: 'Usuário',
+      signOut: {
+        title: 'Sair da conta',
+        description: 'Encerrar a sessão atual e retornar à tela de login',
+        button: 'Sair'
+      }
+    },
+    about: {
+      title: 'Sobre',
+      appName: 'Foxic',
+      appDescription: 'Gerador de fontes de ícones para seus projetos',
+      version: 'Versão'
+    }
+  },
+
   common: {
     loading: 'Carregando...',
     error: 'Erro',
@@ -100,6 +126,18 @@ const pt = {
     settings: 'Configurações',
     help: 'Ajuda',
     more: 'Mais',
+    retry: 'Tentar novamente',
+  },
+
+  home: {
+    appTitle: 'Foxic',
+    appDescription: 'Gerador de fontes de ícones',
+    myProjects: 'Meus Projetos',
+    projectsCount: '{count} projeto',
+    projectsCountMany: '{count} projetos',
+    userMenu: 'Menu do usuário',
+    currentUser: 'Usuário atual: {user}',
+    openSettings: 'Abrir configurações',
   },
   pwa: {
     info: 'Mostrar informações do Progressive Web App',
@@ -108,6 +146,7 @@ const pt = {
     serviceWorker: 'Service Worker',
     online: 'Online',
     cache: 'Cache',
+    statusAlert: 'Status PWA:',
   },
   a11y: {
     skipToContent: 'Pular para o conteúdo',
@@ -162,6 +201,11 @@ const pt = {
     more: 'Mais ações',
   },
 
+  footer: {
+    madeBy: 'Criado por',
+    version: 'Versão',
+  },
+
   errors: {
     generic: 'Ocorreu um erro',
     network: 'Erro de rede',
@@ -171,6 +215,6 @@ const pt = {
     insufficientPermissions: 'Permissões insuficientes',
     onlyOwnerCanDelete: 'Apenas o proprietário pode excluir o projeto',
   },
-} satisfies Translation
+} satisfies BaseTranslation
 
 export default pt

@@ -27,7 +27,10 @@ export const Tooltip: ParentComponent<TooltipProps> = (props) => {
     clearTimeout(hideTimeout);
     showTimeout = setTimeout(() => {
       setIsVisible(true);
-      updatePosition();
+      // Обновляем позицию после рендера
+      requestAnimationFrame(() => {
+        updatePosition();
+      });
     }, delay());
   };
 
@@ -93,6 +96,10 @@ export const Tooltip: ParentComponent<TooltipProps> = (props) => {
       target.addEventListener('focus', showTooltip);
       target.addEventListener('blur', hideTooltip);
     }
+
+    // Обновляем позицию при скролле и ресайзе
+    window.addEventListener('scroll', updatePosition, { passive: true });
+    window.addEventListener('resize', updatePosition, { passive: true });
   });
 
   onCleanup(() => {
@@ -106,6 +113,9 @@ export const Tooltip: ParentComponent<TooltipProps> = (props) => {
       target.removeEventListener('focus', showTooltip);
       target.removeEventListener('blur', hideTooltip);
     }
+
+    window.removeEventListener('scroll', updatePosition);
+    window.removeEventListener('resize', updatePosition);
   });
 
   return (
@@ -121,7 +131,13 @@ export const Tooltip: ParentComponent<TooltipProps> = (props) => {
       <Show when={isVisible() && props.content}>
         <Portal>
           <div
-            ref={setTooltipRef}
+            ref={(el) => {
+              setTooltipRef(el);
+              // Обновляем позицию сразу после установки ref
+              if (el) {
+                requestAnimationFrame(() => updatePosition());
+              }
+            }}
             class={`tooltip tooltip--${position()}`}
             role="tooltip"
             aria-hidden={!isVisible()}

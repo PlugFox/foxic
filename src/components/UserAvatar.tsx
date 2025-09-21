@@ -69,7 +69,7 @@ export default function UserAvatar(props: UserAvatarProps) {
       const img = new Image();
       img.crossOrigin = 'anonymous';
 
-      const loadPromise = new Promise<void>((resolve, reject) => {
+      const loadPromise = new Promise<void>((resolve) => {
         img.onload = () => {
           try {
             // Convert to canvas and cache as data URL
@@ -77,7 +77,10 @@ export default function UserAvatar(props: UserAvatarProps) {
             const ctx = canvas.getContext('2d');
 
             if (!ctx) {
-              reject(new Error('Canvas context not available'));
+              console.warn('Canvas context not available, using original src');
+              setCachedSrc(src);
+              setImageLoaded(true);
+              resolve();
               return;
             }
 
@@ -92,7 +95,7 @@ export default function UserAvatar(props: UserAvatarProps) {
             setImageLoaded(true);
             resolve();
           } catch (error) {
-            console.warn('Image processing failed:', error);
+            console.warn('Image processing failed, using original src:', error);
             // Fallback to original src
             setCachedSrc(src);
             setImageLoaded(true);
@@ -101,16 +104,16 @@ export default function UserAvatar(props: UserAvatarProps) {
         };
 
         img.onerror = () => {
-          console.warn('Avatar image failed to load:', src);
+          console.warn('Avatar image failed to load, showing placeholder:', src);
           setImageError(true);
-          reject(new Error('Image load failed'));
+          resolve(); // Не reject, а resolve для избежания фатальных ошибок
         };
       });
 
       img.src = src;
       await loadPromise;
     } catch (error) {
-      console.warn('Avatar load failed:', error);
+      console.warn('Avatar load failed, showing placeholder:', error);
       setImageError(true);
     }
   };

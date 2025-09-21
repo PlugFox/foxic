@@ -1,4 +1,4 @@
-import type { Translation } from '../i18n-types'
+import type { BaseTranslation } from '../i18n-types'
 
 const fr = {
   app: {
@@ -85,6 +85,32 @@ const fr = {
     pt: 'Portugais',
     ru: 'Russe',
   },
+  settings: {
+    title: 'Paramètres',
+    appearance: {
+      title: 'Apparence',
+      language: {
+        title: 'Langue de l\'interface',
+        description: 'Choisissez la langue d\'affichage de l\'interface de l\'application'
+      }
+    },
+    account: {
+      title: 'Compte',
+      user: 'Utilisateur',
+      signOut: {
+        title: 'Se déconnecter du compte',
+        description: 'Terminer la session actuelle et retourner à l\'écran de connexion',
+        button: 'Se déconnecter'
+      }
+    },
+    about: {
+      title: 'À propos',
+      appName: 'Foxic',
+      appDescription: 'Générateur de polices d\'icônes pour vos projets',
+      version: 'Version'
+    }
+  },
+
   common: {
     loading: 'Chargement...',
     error: 'Erreur',
@@ -100,6 +126,18 @@ const fr = {
     settings: 'Paramètres',
     help: 'Aide',
     more: 'Plus',
+    retry: 'Réessayer',
+  },
+
+  home: {
+    appTitle: 'Foxic',
+    appDescription: 'Générateur de polices d\'icônes',
+    myProjects: 'Mes Projets',
+    projectsCount: '{count} projet',
+    projectsCountMany: '{count} projets',
+    userMenu: 'Menu utilisateur',
+    currentUser: 'Utilisateur actuel : {user}',
+    openSettings: 'Ouvrir les paramètres',
   },
   pwa: {
     info: 'Afficher les informations sur l\'application web progressive',
@@ -108,6 +146,7 @@ const fr = {
     serviceWorker: 'Service Worker',
     online: 'En ligne',
     cache: 'Cache',
+    statusAlert: 'Statut PWA :',
   },
   a11y: {
     skipToContent: 'Aller au contenu',
@@ -162,6 +201,11 @@ const fr = {
     more: 'Plus d\'actions',
   },
 
+  footer: {
+    madeBy: 'Créé par',
+    version: 'Version',
+  },
+
   errors: {
     generic: 'Une erreur s\'est produite',
     network: 'Erreur réseau',
@@ -171,6 +215,6 @@ const fr = {
     insufficientPermissions: 'Permissions insuffisantes',
     onlyOwnerCanDelete: 'Seul le propriétaire peut supprimer le projet',
   },
-} satisfies Translation
+} satisfies BaseTranslation
 
 export default fr

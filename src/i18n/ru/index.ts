@@ -1,4 +1,4 @@
-import type { BaseTranslation } from 'typesafe-i18n'
+import type { BaseTranslation } from '../i18n-types'
 
 const ru = {
   // App
@@ -33,7 +33,12 @@ const ru = {
       createFirst: 'Создать первый проект',
     },
     loading: 'Загрузка проектов...',
+    loadError: 'Не удалось загрузить проекты',
     create: 'Создать проект',
+    created: 'Проект создан',
+    createdMessage: 'Проект "{name}" успешно создан',
+    createError: 'Ошибка создания проекта',
+    createErrorMessage: 'Не удалось создать проект. Попробуйте еще раз.',
     open: 'Открыть проект',
     pin: 'Закрепить',
     unpin: 'Открепить',
@@ -146,6 +151,19 @@ const ru = {
     settings: 'Настройки',
     help: 'Помощь',
     more: 'Ещё',
+    retry: 'Попробовать снова',
+  },
+
+  // Home page
+  home: {
+    appTitle: 'Foxic',
+    appDescription: 'Генератор шрифтов иконок',
+    myProjects: 'Мои проекты',
+    projectsCount: '{count} проект',
+    projectsCountMany: '{count} проектов',
+    userMenu: 'Меню пользователя',
+    currentUser: 'Текущий пользователь: {user}',
+    openSettings: 'Открыть настройки',
   },
 
   // PWA
@@ -156,6 +174,7 @@ const ru = {
     serviceWorker: 'Service Worker',
     online: 'Онлайн',
     cache: 'Кэш',
+    statusAlert: 'Статус PWA:',
   },
 
   // Tooltips
@@ -212,6 +231,12 @@ const ru = {
     emptyProjects: 'Нет доступных проектов',
     menuExpanded: 'Меню развернуто',
     menuCollapsed: 'Меню свернуто',
+  },
+
+  // Footer
+  footer: {
+    madeBy: 'Создано',
+    version: 'Версия',
   },
 
   // Errors

@@ -1,4 +1,4 @@
-import type { Translation } from '../i18n-types'
+import type { BaseTranslation } from '../i18n-types'
 
 const de = {
   app: {
@@ -85,6 +85,32 @@ const de = {
     pt: 'Portugiesisch',
     ru: 'Russisch',
   },
+  settings: {
+    title: 'Einstellungen',
+    appearance: {
+      title: 'Aussehen',
+      language: {
+        title: 'Sprache der Benutzeroberfläche',
+        description: 'Wählen Sie die Sprache für die Anzeige der Anwendungsoberfläche'
+      }
+    },
+    account: {
+      title: 'Konto',
+      user: 'Benutzer',
+      signOut: {
+        title: 'Vom Konto abmelden',
+        description: 'Aktuelle Sitzung beenden und zum Anmeldebildschirm zurückkehren',
+        button: 'Abmelden'
+      }
+    },
+    about: {
+      title: 'Über',
+      appName: 'Foxic',
+      appDescription: 'Icon-Schriftart-Generator für Ihre Projekte',
+      version: 'Version'
+    }
+  },
+
   common: {
     loading: 'Lädt...',
     error: 'Fehler',
@@ -100,6 +126,18 @@ const de = {
     settings: 'Einstellungen',
     help: 'Hilfe',
     more: 'Mehr',
+    retry: 'Erneut versuchen',
+  },
+
+  home: {
+    appTitle: 'Foxic',
+    appDescription: 'Icon-Schriftart-Generator',
+    myProjects: 'Meine Projekte',
+    projectsCount: '{count} Projekt',
+    projectsCountMany: '{count} Projekte',
+    userMenu: 'Benutzermenü',
+    currentUser: 'Aktueller Benutzer: {user}',
+    openSettings: 'Einstellungen öffnen',
   },
   pwa: {
     info: 'Progressive Web App-Informationen anzeigen',
@@ -108,6 +146,7 @@ const de = {
     serviceWorker: 'Service Worker',
     online: 'Online',
     cache: 'Cache',
+    statusAlert: 'PWA-Status:',
   },
   a11y: {
     skipToContent: 'Zum Inhalt springen',
@@ -162,6 +201,11 @@ const de = {
     more: 'Weitere Aktionen',
   },
 
+  footer: {
+    madeBy: 'Erstellt von',
+    version: 'Version',
+  },
+
   errors: {
     generic: 'Ein Fehler ist aufgetreten',
     network: 'Netzwerkfehler',
@@ -171,6 +215,6 @@ const de = {
     insufficientPermissions: 'Unzureichende Berechtigungen',
     onlyOwnerCanDelete: 'Nur der Eigentümer kann das Projekt löschen',
   },
-} satisfies Translation
+} satisfies BaseTranslation
 
 export default de

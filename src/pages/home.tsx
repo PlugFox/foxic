@@ -8,15 +8,16 @@ import NewProjectCard from '../components/NewProjectCard';
 import NewProjectDialog from '../components/NewProjectDialog';
 import ProjectCard from '../components/ProjectCard';
 import Tooltip from '../components/Tooltip';
+import UserAvatar from '../components/UserAvatar';
 import { useAuth } from '../contexts/auth.context';
-import { useTranslation } from '../contexts/i18n.context';
+import { useI18n } from '../contexts/i18n.context';
 import { analyticsService } from '../services/analytics.service';
 import { CreateProjectData, ProjectInfo, projectsService } from '../services/projects.service';
 import { toastService } from '../services/toast.service';
 
 export default function HomePage() {
   const { user } = useAuth();
-  const LL = useTranslation();
+  const { t, isReady } = useI18n();
   const navigate = useNavigate();
 
   const [projects, setProjects] = createSignal<Record<string, ProjectInfo>>({});
@@ -42,7 +43,7 @@ export default function HomePage() {
         );
       } catch (err) {
         console.error('Error loading projects:', err);
-        setError('Не удалось загрузить проекты');
+        setError(t().projects.loadError());
         setIsLoading(false);
       }
     }
@@ -66,7 +67,7 @@ export default function HomePage() {
         );
       } catch (err) {
         console.error('Error loading projects:', err);
-        setError('Не удалось загрузить проекты');
+        setError(t().projects.loadError());
         setIsLoading(false);
       }
     }
@@ -125,14 +126,14 @@ export default function HomePage() {
       });
 
       toastService.success(
-        'Проект создан',
-        `Проект "${projectData.name}" успешно создан`
+        t().projects.created(),
+        t().projects.createdMessage({ name: projectData.name })
       );
     } catch (error) {
       console.error('Ошибка создания проекта:', error);
       toastService.error(
-        'Ошибка создания проекта',
-        'Не удалось создать проект. Попробуйте еще раз.'
+        t().projects.createError(),
+        t().projects.createErrorMessage()
       );
       throw error; // Пробрасываем ошибку в диалог для обработки
     } finally {
@@ -174,7 +175,7 @@ export default function HomePage() {
     } catch (error) {
       console.error('Ошибка при выполнении действия:', error);
       // В реальном приложении здесь можно показать toast-уведомление
-      alert(`Ошибка: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`);
+      alert(`${t().common.error()}: ${error instanceof Error ? error.message : t().errors.generic()}`);
     }
   };  const handleTogglePin = async (projectId: string) => {
     const currentUser = user();
@@ -203,41 +204,39 @@ export default function HomePage() {
     const isOnline = navigator.onLine;
 
     const info = [
-      `PWA установлено: ${isInstalled ? '✅' : '❌'}`,
-      `Service Worker: ${hasServiceWorker ? '✅' : '❌'}`,
-      `Онлайн: ${isOnline ? '✅' : '❌'}`,
-      `Кэш: ${('caches' in window) ? '✅' : '❌'}`
+      `${t().pwa.installed()}: ${isInstalled ? '✅' : '❌'}`,
+      `${t().pwa.serviceWorker()}: ${hasServiceWorker ? '✅' : '❌'}`,
+      `${t().pwa.online()}: ${isOnline ? '✅' : '❌'}`,
+      `${t().pwa.cache()}: ${('caches' in window) ? '✅' : '❌'}`
     ].join('\n');
 
-    alert(`Статус PWA:\n\n${info}`);
+    alert(`${t().pwa.statusAlert()}\n\n${info}`);
   };
 
   return (
-    <div class="home-container" role="application" aria-label="Foxic - Генератор шрифтов иконок">
+    <div class="home-container" role="application" aria-label={t().a11y.applicationLandmark()}>
       <header class="app-header" role="banner">
         <div class="header-content">
-          <h1 id="app-title">Foxic</h1>
-          <nav class="user-menu" role="navigation" aria-label="Меню пользователя">
+          <h1 id="app-title">{t().home.appTitle()}</h1>
+          <nav class="user-menu" role="navigation" aria-label={t().home.userMenu()}>
             <div class="user-info">
               <div class="user-profile">
-                <Show when={user()?.photoURL}>
-                  <img
-                    src={user()?.photoURL!}
-                    alt={`Аватар пользователя ${user()?.displayName || user()?.email}`}
-                    class="user-avatar"
-                    loading="lazy"
-                  />
-                </Show>
-                <span class="user-name" aria-label={`Текущий пользователь: ${user()?.displayName || user()?.email}`}>
+                <UserAvatar
+                  src={user()?.photoURL || undefined}
+                  alt={`${t().tooltips.userAvatar()} ${user()?.displayName || user()?.email}`}
+                  size={32}
+                  fallbackInitials={user()?.displayName || user()?.email || undefined}
+                />
+                <span class="user-name" aria-label={t().home.currentUser({ user: user()?.displayName || user()?.email || '' })}>
                   {user()?.displayName || user()?.email}
                 </span>
               </div>
-              <Tooltip content="Настройки" position="bottom">
+              <Tooltip content={t().common.settings()} position="bottom">
                 <HapticButton
                   onClick={() => navigate('/settings')}
                   class="btn btn-ghost"
                   haptic="light"
-                  aria-label="Открыть настройки"
+                  aria-label={t().home.openSettings()}
                 >
                   <SettingsIcon size={20} aria-hidden="true" />
                 </HapticButton>
@@ -250,18 +249,18 @@ export default function HomePage() {
       <main class="main-content" role="main" aria-labelledby="app-title">
         <section class="projects-container" aria-labelledby="projects-heading">
           <header class="projects-header">
-            <h2 id="projects-heading">Мои проекты</h2>
+            <h2 id="projects-heading">{t().home.myProjects()}</h2>
             <Show when={!isLoading() && Object.keys(projects()).length > 0}>
               <span class="projects-count" role="status" aria-live="polite">
-                {Object.keys(projects()).length} {Object.keys(projects()).length === 1 ? 'проект' : 'проектов'}
+                {Object.keys(projects()).length === 1 ? t().home.projectsCount({ count: Object.keys(projects()).length }) : t().home.projectsCountMany({ count: Object.keys(projects()).length })}
               </span>
             </Show>
           </header>
 
           <Show when={isLoading()}>
-            <div class="projects-loading" role="status" aria-live="polite" aria-label="Загрузка проектов">
+            <div class="projects-loading" role="status" aria-live="polite" aria-label={t().projects.loading()}>
               <LoadingSpinner size={32} />
-              <p>Загрузка проектов...</p>
+              <p>{t().projects.loading()}</p>
             </div>
           </Show>
 
@@ -270,7 +269,7 @@ export default function HomePage() {
               loading={false}
               error={error()}
               onRetry={retryLoadProjects}
-              retryLabel="Попробовать снова"
+              retryLabel={t().common.retry()}
             >
               <></>
             </LoadingState>
@@ -279,8 +278,8 @@ export default function HomePage() {
           <Show when={!isLoading() && Object.keys(projects()).length === 0}>
             <div class="projects-empty" role="region" aria-labelledby="empty-heading">
               <div class="empty-icon" aria-hidden="true">📁</div>
-              <h3 id="empty-heading">У вас пока нет проектов</h3>
-              <p>Создайте свой первый проект для работы с иконками</p>
+              <h3 id="empty-heading">{t().projects.empty.title()}</h3>
+              <p>{t().projects.empty.description()}</p>
               <HapticButton
                 class="btn btn-primary btn-large"
                 onClick={() => setShowNewProjectDialog(true)}
@@ -288,7 +287,7 @@ export default function HomePage() {
                 aria-describedby="empty-heading"
               >
                 <AddIcon size={20} aria-hidden="true" />
-                Создать первый проект
+                {t().projects.empty.createFirst()}
               </HapticButton>
             </div>
           </Show>
@@ -297,7 +296,7 @@ export default function HomePage() {
             <div
               class="projects-grid"
               role="grid"
-              aria-label="Сетка проектов"
+              aria-label={t().a11y.projectGrid()}
               aria-rowcount={Math.ceil((Object.keys(projects()).length + 1) / 3)}
             >
               <For each={sortedProjects()}>
@@ -340,14 +339,14 @@ export default function HomePage() {
 
       <ConfirmDialog
         isOpen={showActionDialog()}
-        title={projectAction()?.isOwner ? "Удалить проект" : "Покинуть проект"}
+        title={projectAction()?.isOwner ? t().actions.delete.title() : t().actions.leave.title()}
         message={
           projectAction()?.isOwner
-            ? `Вы уверены, что хотите удалить проект "${projectAction()?.name}"? Это действие нельзя отменить.`
-            : `Вы уверены, что хотите покинуть проект "${projectAction()?.name}"? Вы потеряете доступ к проекту.`
+            ? t().actions.delete.message({ name: projectAction()?.name || '' })
+            : t().actions.leave.message({ name: projectAction()?.name || '' })
         }
-        confirmText={projectAction()?.isOwner ? "Удалить" : "Покинуть"}
-        cancelText="Отмена"
+        confirmText={projectAction()?.isOwner ? t().actions.delete.confirm() : t().actions.leave.confirm()}
+        cancelText={t().actions.cancel()}
         isDestructive={true}
         onConfirm={handleConfirmAction}
         onCancel={() => {
