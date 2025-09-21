@@ -35,7 +35,7 @@ export default function SettingsPage() {
           >
             <Icon name="chevron_left" size={24} aria-hidden="true" />
           </HapticButton>
-          <h1 id="settings-title">Настройки</h1>
+          <h1 id="settings-title">{(LL as any).settings?.title?.() || LL.common.settings()}</h1>
         </div>
       </header>
 
@@ -43,13 +43,13 @@ export default function SettingsPage() {
         <section class="settings-section" aria-labelledby="appearance-heading">
           <h2 id="appearance-heading" class="settings-section-title">
             <Icon name="palette" size={20} aria-hidden="true" />
-            Внешний вид
+            {(LL as any).settings?.appearance?.title?.() || 'Внешний вид'}
           </h2>
           <div class="settings-item">
             <div class="settings-item-info">
-              <div class="settings-item-title">Язык интерфейса</div>
+              <div class="settings-item-title">{(LL as any).settings?.appearance?.language?.title?.() || 'Язык интерфейса'}</div>
               <div class="settings-item-description">
-                Выберите язык для отображения интерфейса приложения
+                {(LL as any).settings?.appearance?.language?.description?.() || 'Выберите язык для отображения интерфейса приложения'}
               </div>
             </div>
             <div class="settings-item-control">
@@ -61,11 +61,11 @@ export default function SettingsPage() {
         <section class="settings-section" aria-labelledby="account-heading">
           <h2 id="account-heading" class="settings-section-title">
             <Icon name="person" size={20} aria-hidden="true" />
-            Аккаунт
+            {(LL as any).settings?.account?.title?.() || 'Аккаунт'}
           </h2>
           <div class="settings-item">
             <div class="settings-item-info">
-              <div class="settings-item-title">Пользователь</div>
+              <div class="settings-item-title">{(LL as any).settings?.account?.user?.() || 'Пользователь'}</div>
               <div class="settings-item-description">
                 {user()?.displayName || user()?.email}
               </div>
@@ -83,9 +83,9 @@ export default function SettingsPage() {
           </div>
           <div class="settings-item">
             <div class="settings-item-info">
-              <div class="settings-item-title">Выйти из аккаунта</div>
+              <div class="settings-item-title">{(LL as any).settings?.account?.signOut?.title?.() || 'Выйти из аккаунта'}</div>
               <div class="settings-item-description">
-                Завершить текущую сессию и вернуться к экрану входа
+                {(LL as any).settings?.account?.signOut?.description?.() || 'Завершить текущую сессию и вернуться к экрану входа'}
               </div>
             </div>
             <div class="settings-item-control">
@@ -93,10 +93,10 @@ export default function SettingsPage() {
                 onClick={handleSignOut}
                 class="btn btn-danger"
                 haptic="medium"
-                aria-label="Выйти из аккаунта"
+                aria-label={LL.auth.signOut()}
               >
                 <LogoutIcon size={18} aria-hidden="true" />
-                Выйти
+                {(LL as any).settings?.account?.signOut?.button?.() || LL.auth.logout()}
               </HapticButton>
             </div>
           </div>
@@ -105,19 +105,19 @@ export default function SettingsPage() {
         <section class="settings-section" aria-labelledby="about-heading">
           <h2 id="about-heading" class="settings-section-title">
             <Icon name="info" size={20} aria-hidden="true" />
-            О приложении
+            {(LL as any).settings?.about?.title?.() || 'О приложении'}
           </h2>
           <div class="settings-item">
             <div class="settings-item-info">
-              <div class="settings-item-title">Foxic</div>
+              <div class="settings-item-title">{(LL as any).settings?.about?.appName?.() || 'Foxic'}</div>
               <div class="settings-item-description">
-                Генератор шрифтов иконок для ваших проектов
+                {(LL as any).settings?.about?.appDescription?.() || 'Генератор шрифтов иконок для ваших проектов'}
               </div>
             </div>
           </div>
           <div class="settings-item">
             <div class="settings-item-info">
-              <div class="settings-item-title">Версия</div>
+              <div class="settings-item-title">{(LL as any).settings?.about?.version?.() || 'Версия'}</div>
               <div class="settings-item-description">1.0.0</div>
             </div>
           </div>

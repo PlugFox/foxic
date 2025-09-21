@@ -103,6 +103,33 @@ const ru = {
     ru: 'Русский',
   },
 
+  // Settings
+  settings: {
+    title: 'Настройки',
+    appearance: {
+      title: 'Внешний вид',
+      language: {
+        title: 'Язык интерфейса',
+        description: 'Выберите язык для отображения интерфейса приложения'
+      }
+    },
+    account: {
+      title: 'Аккаунт',
+      user: 'Пользователь',
+      signOut: {
+        title: 'Выйти из аккаунта',
+        description: 'Завершить текущую сессию и вернуться к экрану входа',
+        button: 'Выйти'
+      }
+    },
+    about: {
+      title: 'О приложении',
+      appName: 'Foxic',
+      appDescription: 'Генератор шрифтов иконок для ваших проектов',
+      version: 'Версия'
+    }
+  },
+
   // Common
   common: {
     loading: 'Загрузка...',

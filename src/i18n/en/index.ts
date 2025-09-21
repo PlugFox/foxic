@@ -103,6 +103,33 @@ const en = {
     ru: 'Russian',
   },
 
+  // Settings
+  settings: {
+    title: 'Settings',
+    appearance: {
+      title: 'Appearance',
+      language: {
+        title: 'Interface Language',
+        description: 'Choose the language for displaying the application interface'
+      }
+    },
+    account: {
+      title: 'Account',
+      user: 'User',
+      signOut: {
+        title: 'Sign out from account',
+        description: 'End current session and return to login screen',
+        button: 'Sign out'
+      }
+    },
+    about: {
+      title: 'About',
+      appName: 'Foxic',
+      appDescription: 'Icon font generator for your projects',
+      version: 'Version'
+    }
+  },
+
   // Common
   common: {
     loading: 'Loading...',

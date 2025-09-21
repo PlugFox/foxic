@@ -2,7 +2,7 @@ import { useNavigate } from '@solidjs/router';
 import { createEffect, createSignal, For, onCleanup, onMount, Show } from 'solid-js';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { HapticButton } from '../components/HapticComponents';
-import { AddIcon, AnalyticsIcon, SettingsIcon } from '../components/Icon';
+import { AddIcon, SettingsIcon } from '../components/Icon';
 import { LoadingSpinner, LoadingState } from '../components/Loading';
 import NewProjectCard from '../components/NewProjectCard';
 import NewProjectDialog from '../components/NewProjectDialog';
@@ -318,7 +318,7 @@ export default function HomePage() {
         </section>
       </main>
 
-      <footer class="app-footer" role="contentinfo">
+      {/* <footer class="app-footer" role="contentinfo">
         <HapticButton
           onClick={handlePWAInfo}
           class="pwa-info-btn"
@@ -329,7 +329,7 @@ export default function HomePage() {
           <AnalyticsIcon size={16} aria-hidden="true" />
           PWA
         </HapticButton>
-      </footer>
+      </footer> */}
 
       <NewProjectDialog
         isOpen={showNewProjectDialog()}
