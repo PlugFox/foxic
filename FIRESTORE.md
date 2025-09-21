@@ -211,23 +211,23 @@ interface ArchiveValidation {
 ## Optimized User Flows
 
 ### Save Project (Client → Firestore)
-**Cost**: 1 Firestore write per icon set update
+**Cost**: 2 Firestore writes per icon set update
 1. User modifies icons in client memory
 2. Client validates total archive size will not exceed 1MB limit
 3. Client creates manifest.json with all metadata (rev, hash, count, icon info)
 4. Client compresses archive (SVGs + manifest) using fflate
 5. Update Firestore `projects/{projectId}/data/icons` document atomically with compressed blob
-6. Update `users/{uid}/data/projects` with denormalized project info (1 additional write)
+6. Update `users/{uid}/data/projects` with denormalized project info (total: 2 writes)
 
 ### Load Project (Client)
-**Cost**: 1 Firestore read (all data in single document)
+**Cost**: 1 Firestore read (archive document contains all data)
 1. Read `projects/{projectId}/data/icons` (1 Firestore read - compressed archive with all data)
-2. Decompress blob using fflate
-3. Extract manifest.json to get metadata (rev, hash, count, icon info)
+2. Decompress blob using fflate to extract archive contents
+3. Parse manifest.json from archive to get metadata (rev, hash, count, icon info)
 4. Check client cache using `hash` from manifest
 5. If cache miss or expired:
-   - Extract SVGs from archive
-   - Cache decompressed data locally
+   - Extract and parse SVG files from archive
+   - Cache decompressed data locally (icons + manifest)
 6. **Client-side font generation**: Generate fonts in browser when user exports
 
 ### Load User Dashboard
@@ -259,14 +259,14 @@ interface ArchiveValidation {
 - **Project load**: 1 read for complete project data including all metadata and icons
 - **Member management**: No separate user lookups (denormalized in project members)
 - **No expensive queries**: Avoided `array-contains` and complex filtering
-- **Single document per project**: All icon data and metadata in one document
+- **Dedicated archive document**: All icon data and metadata in single archive document
 
 ### Blob Storage Efficiency
-- **1MB document limit**: Each archive respects Firestore's document size limit
+- **1MB document limit**: Each archive document respects Firestore's document size limit
 - **fflate compression**: High compression ratios for SVG files (typically 70-90% reduction)
-- **Embedded metadata**: All project info in manifest.json within archive
-- **Single read access**: Complete project data in one Firestore read
-- **Client-side decompression**: Fast browser-native decompression
+- **Embedded metadata**: All project metadata in manifest.json within archive
+- **Single read access**: Complete project icon data in one Firestore read
+- **Client-side decompression**: Fast browser-native decompression with fflate
 - **Size validation**: Frontend prevents oversized archives before write attempts
 
 ### Scalability Features
@@ -278,7 +278,7 @@ interface ArchiveValidation {
 - **Compression benefits**: fflate typically allows 5-10x more icons within 1MB limit
 
 ### Developer Experience
-- **Single document per project**: All icon data and metadata in one Firestore document
+- **Dedicated archive document**: Icon data and metadata in single archive document per project
 - **Type safety**: Clear TypeScript interfaces for all data structures
 - **Predictable costs**: Only Firestore document writes, no external storage costs
 - **Role-based security**: Fine-grained permissions with minimal complexity
